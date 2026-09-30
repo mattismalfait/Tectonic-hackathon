@@ -1,0 +1,3 @@
+Lumina intranet - HR FAQ (last updated 2023-01-10)
+Q: I changed bank account. How do I get my salary paid into the new account?
+A: Send your new IBAN by email to HR. HR forwards it to our payroll provider SD Worx. Changes received before the 20th of the month are paid into your new account that same month.

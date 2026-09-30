@@ -1,0 +1,90 @@
+[
+  {
+    "id": "m01",
+    "channel": "payroll-lumina",
+    "timestamp": "2022-05-18T09:12:00+02:00",
+    "user": "Marc Janssens",
+    "thread_of": null,
+    "text": "Lumina HR forwarded an email from an employee with her new IBAN. It came from her own email address, so I've entered it. It's the 18th, so it still goes into this month's run."
+  },
+  {
+    "id": "m02",
+    "channel": "payroll-lumina",
+    "timestamp": "2026-02-17T10:03:00+01:00",
+    "user": "Sara Peeters",
+    "thread_of": null,
+    "text": "Heads-up: the Lumina bank account procedure has been updated (v2.0, live from 1 March). Bank account changes now only go through the MyPayslip portal, no more emails."
+  },
+  {
+    "id": "m03",
+    "channel": "payroll-lumina",
+    "timestamp": "2026-03-18T14:41:00+01:00",
+    "user": "Marc Janssens",
+    "thread_of": null,
+    "text": "Got an IBAN change by email from a Lumina employee today. Checked that it came from his own email address and entered it in SAP. Should still make this month's payroll."
+  },
+  {
+    "id": "m04",
+    "channel": "payroll-lumina",
+    "timestamp": "2026-03-18T14:55:00+01:00",
+    "user": "Sara Peeters",
+    "thread_of": "m03",
+    "text": "@Marc careful: since March we don't accept email requests anymore and the cut-off is the 15th, so this one goes to April. Can you ask him to submit it in the portal? Then I'll do the call-back to the number in his file."
+  },
+  {
+    "id": "m05",
+    "channel": "payroll-ops-be",
+    "timestamp": "2026-04-02T08:30:00+02:00",
+    "user": "Karim El Amrani",
+    "thread_of": null,
+    "text": "FYI: SAP now locks payment details on the 15th at 18:00 for all BE clients. Changes made after that are queued for the next month's run."
+  },
+  {
+    "id": "m06",
+    "channel": "payroll-lumina",
+    "timestamp": "2026-05-06T16:20:00+02:00",
+    "user": "Sara Peeters",
+    "thread_of": null,
+    "text": "Did the call-back for a Lumina IBAN change today, on the number we have on file. Employee confirmed, change entered."
+  },
+  {
+    "id": "m11",
+    "channel": "payroll-ops-be",
+    "timestamp": "2026-06-03T09:15:00+02:00",
+    "user": "Karim El Amrani",
+    "thread_of": null,
+    "text": "Reminder: since June 2025 every bank account change in SAP needs approval by a second payroll consultant before it's released. No exceptions for urgent cases, please."
+  },
+  {
+    "id": "m07",
+    "channel": "payroll-nl",
+    "timestamp": "2026-06-12T11:00:00+02:00",
+    "user": "Lotte Bakker",
+    "thread_of": null,
+    "text": "Reminder for our NL clients: the cut-off for bank account changes stays on the 20th of the month."
+  },
+  {
+    "id": "m08",
+    "channel": "payroll-lumina",
+    "timestamp": "2026-07-08T12:05:00+02:00",
+    "user": "Pieter De Smet",
+    "thread_of": null,
+    "text": "Anyone up for lunch at 12:30? Trying the new place next to the station."
+  },
+  {
+    "id": "m09",
+    "channel": "payroll-lumina",
+    "timestamp": "2026-08-21T09:47:00+02:00",
+    "user": "Sara Peeters",
+    "thread_of": null,
+    "text": "Lumina HR still emails us an Excel file with IBAN changes every month (6 employees this time). Do we keep processing those, or send everyone to the portal? @Ines"
+  },
+  {
+    "id": "m10",
+    "channel": "payroll-ops-be",
+    "timestamp": "2026-09-15T07:58:00+02:00",
+    "user": "Karim El Amrani",
+    "thread_of": null,
+    "text": "Reminder: payment details lock tonight at 18:00 for the September run."
+  }
+]

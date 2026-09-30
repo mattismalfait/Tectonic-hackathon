@@ -1,0 +1,2 @@
+Control record ZPAYLOCK_BE | Scope: all Belgian clients | Valid from 2026-04-01 (previous value: day 20)
+Payment details are locked for the current month's payroll on day 15 at 18:00. Changes saved after the lock are queued and applied from the next month's payroll run.

@@ -1,0 +1,11 @@
+[2022-05-18 09:12] #payroll-lumina  Marc Janssens: Lumina HR forwarded an email from an employee with her new IBAN. It came from her own email address, so I've entered it. It's the 18th, so it still goes into this month's run.
+[2026-02-17 10:03] #payroll-lumina  Sara Peeters: Heads-up: the Lumina bank account procedure has been updated (v2.0, live from 1 March). Bank account changes now only go through the MyPayslip portal, no more emails.
+[2026-03-18 14:41] #payroll-lumina  Marc Janssens: Got an IBAN change by email from a Lumina employee today. Checked that it came from his own email address and entered it in SAP. Should still make this month's payroll.
+    ↳ reply: [2026-03-18 14:55] #payroll-lumina  Sara Peeters: @Marc careful: since March we don't accept email requests anymore and the cut-off is the 15th, so this one goes to April. Can you ask him to submit it in the portal? Then I'll do the call-back to the number in his file.
+[2026-04-02 08:30] #payroll-ops-be  Karim El Amrani: FYI: SAP now locks payment details on the 15th at 18:00 for all BE clients. Changes made after that are queued for the next month's run.
+[2026-05-06 16:20] #payroll-lumina  Sara Peeters: Did the call-back for a Lumina IBAN change today, on the number we have on file. Employee confirmed, change entered.
+[2026-06-03 09:15] #payroll-ops-be  Karim El Amrani: Reminder: since June 2025 every bank account change in SAP needs approval by a second payroll consultant before it's released. No exceptions for urgent cases, please.
+[2026-06-12 11:00] #payroll-nl  Lotte Bakker: Reminder for our NL clients: the cut-off for bank account changes stays on the 20th of the month.
+[2026-07-08 12:05] #payroll-lumina  Pieter De Smet: Anyone up for lunch at 12:30? Trying the new place next to the station.
+[2026-08-21 09:47] #payroll-lumina  Sara Peeters: Lumina HR still emails us an Excel file with IBAN changes every month (6 employees this time). Do we keep processing those, or send everyone to the portal? @Ines
+[2026-09-15 07:58] #payroll-ops-be  Karim El Amrani: Reminder: payment details lock tonight at 18:00 for the September run.

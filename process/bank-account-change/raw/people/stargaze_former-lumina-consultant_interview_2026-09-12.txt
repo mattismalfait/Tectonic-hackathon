@@ -1,0 +1,5 @@
+[StarGaze capture - consented interview - 2026-09-12 - 00:02:10]
+Interviewer: How did bank account changes work for Lumina when you handled them?
+Former Lumina payroll consultant: Simple. The employee emails HR and HR forwards it to us. I check that the email comes from the employee's own address, that's the verification. Then I enter it in SAP.
+Interviewer: Is that still the way it works today?
+Former Lumina payroll consultant: As far as I know, yes. I haven't handled Lumina since the handover in January.

@@ -48,7 +48,7 @@ function Dot({ e, onClick }: { e: ScoredEvidence; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      title={`${e.source.title}\n"${e.claim.value}"\nweight ${e.weight.toFixed(2)} · ${e.status}${e.excludedReason ? ` (${e.excludedReason})` : ''}`}
+      title={`${e.source.title}\n"${e.claim.value}"\nweight ${e.weight.toFixed(2)} · ${e.status}${e.excludedReason ? ` (${e.excludedReason})` : ''}${e.echoOf ? ` · repeats "${e.echoOf}"` : ''}`}
       className={`rounded-full border-2 ${cls} shrink-0 transition hover:scale-125`}
       style={{ width: size, height: size }}
     />
@@ -402,6 +402,7 @@ function StepDetail({ r, onResolve, onUnresolve }: { r: StepResult; onResolve: (
                       {e.status}
                     </span>
                     {e.excludedReason && <div className="text-slate-400">{e.excludedReason}</div>}
+                    {e.echoOf && <div className="text-slate-400">repeats "{e.echoOf}"</div>}
                   </td>
                 </tr>
               ))}

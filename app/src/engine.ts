@@ -82,6 +82,9 @@ const CONTESTED_RATIO = 0.5
 const CONTESTED_CAP = 0.45
 const UNDOCUMENTED_CAP = 0.7
 const CONFIRMATION_BONUS = 0.1
+// A source that repeats another source still raises confidence (the knowledge is in use),
+// but less than an independent confirmation, so one outdated doc copied five times cannot outvote reality.
+const ECHO_BONUS = 0.05
 
 export type Band = 'green' | 'amber' | 'red' | 'gap'
 
@@ -100,6 +103,7 @@ export interface ScoredEvidence {
   weight: number
   status: 'supports' | 'contradicts' | 'excluded' | 'overruled'
   excludedReason?: string
+  echoOf?: string
 }
 
 export interface ValueGroup {
@@ -152,8 +156,10 @@ export function monthsBetween(from: string, to: Date): number {
 
 export function bandOf(score: number, hasEvidence: boolean): Band {
   if (!hasEvidence) return 'gap'
-  if (score >= THRESHOLDS.green) return 'green'
-  if (score >= THRESHOLDS.amber) return 'amber'
+  // Band on the displayed (rounded) percentage, so "75%" is never shown as amber.
+  const shown = Math.round(score * 100)
+  if (shown >= THRESHOLDS.green * 100) return 'green'
+  if (shown >= THRESHOLDS.amber * 100) return 'amber'
   return 'red'
 }
 
@@ -217,14 +223,13 @@ export function scoreStep(
     }
   }
 
-  // Filter 2: independence. A copy of another source counts once (keep the heavier one).
+  // Echoes: a source that repeats another source confirms it, with a smaller bonus than an independent source.
   for (const e of evidence) {
     if (e.status === 'excluded' || !e.source.origin) continue
-    const original = evidence.find((o) => o.source.id === e.source.origin && o.status !== 'excluded')
-    if (original && original.claim.value === e.claim.value) {
-      e.status = 'excluded'
-      e.excludedReason = `Copy of "${original.source.title}", counted once`
-      reasons.push(`Not counted twice: "${e.source.title}" repeats "${original.source.title}".`)
+    const original = sourceById.get(e.source.origin)
+    if (original) {
+      e.echoOf = original.title
+      reasons.push(`"${e.source.title}" repeats "${original.title}": counts as a confirmation, with half the bonus of an independent source.`)
     }
   }
 
@@ -284,13 +289,18 @@ export function scoreStep(
   for (const e of counted) e.status = e.claim.value === leading.value ? 'supports' : 'contradicts'
 
   const agreement = totalWeight > 0 ? leading.weight / totalWeight : 0
-  const supportWeights = leading.evidence.map((e) => e.weight).sort((a, b) => b - a)
-  const strength = Math.min(1, supportWeights[0] + CONFIRMATION_BONUS * (supportWeights.length - 1))
+  const support = [...leading.evidence].sort((a, b) => b.weight - a.weight)
+  const others = support.slice(1)
+  const independent = others.filter((e) => !e.echoOf).length
+  const echoes = others.length - independent
+  const strength = Math.min(1, support[0].weight + CONFIRMATION_BONUS * independent + ECHO_BONUS * echoes)
 
   reasons.push(`Agreement ${pct(agreement)}: "${leading.value}" carries ${leading.weight.toFixed(2)} of ${totalWeight.toFixed(2)} total evidence weight.`)
   reasons.push(
-    `Strength ${pct(strength)}: strongest supporting source weighs ${supportWeights[0].toFixed(2)}` +
-      (supportWeights.length > 1 ? ` + ${supportWeights.length - 1} independent confirmation(s) × ${CONFIRMATION_BONUS}.` : '.'),
+    `Strength ${pct(strength)}: strongest supporting source weighs ${support[0].weight.toFixed(2)}` +
+      (independent > 0 ? ` + ${independent} independent confirmation(s) × ${CONFIRMATION_BONUS}` : '') +
+      (echoes > 0 ? ` + ${echoes} repeat(s) × ${ECHO_BONUS}` : '') +
+      '.',
   )
 
   let score = agreement * strength
@@ -356,6 +366,8 @@ export function scoreProcess(
   return { score, status, steps, actions: deriveActions(steps) }
 }
 
+const ownerOf = (e: ScoredEvidence) => (e.source.owner_status === 'active' ? e.source.author_role : 'Knowledge manager')
+
 function deriveActions(steps: StepResult[]): Action[] {
   const actions: Action[] = []
   const seen = new Set<string>()
@@ -385,14 +397,16 @@ function deriveActions(steps: StepResult[]): Action[] {
       push({ kind: 'document', stepId: r.step.id, text: `Document "${r.step.name}": today it only lives in chats and people's heads.`, who: owner })
     }
     for (const e of r.evidence) {
-      if ((e.status === 'contradicts' || e.status === 'overruled') && (e.source.type === 'doc' || e.source.type === 'business_app')) {
-        push({ kind: 'retire', stepId: r.step.id, text: `Update or retire "${e.source.title}": it says "${e.claim.value}".`, who: e.source.author_role })
+      // While a step is contested we don't know which side is right yet: no retire actions until a human decides.
+      const losing = e.status === 'overruled' || (e.status === 'contradicts' && !r.contested)
+      if (losing && (e.source.type === 'doc' || e.source.type === 'business_app')) {
+        push({ kind: 'retire', stepId: r.step.id, text: `Update or retire "${e.source.title}": it says "${e.claim.value}".`, who: ownerOf(e) })
       }
       if (e.status === 'supports' && e.source.owner_status === 'left') {
         push({ kind: 'reassign', stepId: r.step.id, text: `Assign a new owner to "${e.source.title}" (owner left).`, who: 'Knowledge manager' })
       }
       if (e.status === 'supports' && e.source.type === 'doc' && e.signals.reviewed === 0) {
-        push({ kind: 'review', stepId: r.step.id, text: `Review "${e.source.title}" (not reviewed in 12 months).`, who: e.source.author_role })
+        push({ kind: 'review', stepId: r.step.id, text: `Review "${e.source.title}" (not reviewed in 12 months).`, who: ownerOf(e) })
       }
     }
   }
