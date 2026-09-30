@@ -14,9 +14,12 @@ A **quality management dashboard** that shows, **per process and per step**, how
 - No black box: **the AI only extracts claims, a simple formula computes the score, a human decides on conflicts.**
 
 ## 3. Demo process
-**"Offboarding of a senior employee"**, client *Lumina Retail NV* (fictional), Belgium, joint committee PC 311. Senior with 18 years of seniority resigns.
+**Main demo: "A client's employee changes bank account"** (easy to follow; data lives in `process/bank-account-change`).
+Second process (data in `process/offboarding`): **"Offboarding of a senior employee"**, client *Lumina Retail NV* (fictional), Belgium, joint committee PC 311. Senior with 18 years of seniority resigns.
 8 steps: register the exit, notice period, non-compete clause, final pay (holiday pay on departure + year-end bonus), company car, group insurance, Dimona OUT + C4, knowledge handover.
 Each step triggers a different trust pattern: green agreement, an old chat vs. a new doc, a doc vs. SAP, practice that is never documented, a stale source, a gap.
+
+**"Client's employee changes bank account"**
 
 ## 4. Architecture
 
@@ -35,10 +38,19 @@ people    StarGaze (role-based) ┘   appear in the source)        → process s
 ## 5. The scoring model (simple, like the output of a regression)
 
 **Step A: weight per source** (0–1)
-`w = 0.5 × Authority + 0.3 × Recency + 0.2 × Reliability`
-- Authority by type: doc 1.0 · business app 0.8 · person 0.8 (owner of this step) or 0.5 (other role) · email 0.4 · chat 0.3
-- Recency = `1 − age in years / 3` (brand new = 1, 3+ years = 0)
-- Reliability: approved 1.0 · chat/person/app 0.7 · draft 0.6 · unreviewed 0.4 · **×0.5 if the owner has left**
+**Only objective signals, no opinions.** Every source answers 5 factual questions that a system can check automatically:
+
+| # | Signal | Objective check | Comes from |
+|---|---|---|---|
+| 1 | **Designated** | Is this the designated source for this step? (the doc in the process register, the system of record, the person who is RACI-responsible for the step) | process register / RACI |
+| 2 | **Approved** | Does it have a formal approval? (doc approval status, approved change request for app config) | document / change metadata |
+| 3 | **Recent** | `1 − months since last change / 36` | last-modified date |
+| 4 | **Reviewed** | Reviewed or verified in the last 12 months? | review date / execution log |
+| 5 | **Owner active** | Is the owner/author still employed and in this role? | HR system / directory |
+
+`w = (Designated + Approved + Recent + Reviewed + Owner active) / 5` → **equal weights by default, so no hidden preference.**
+
+**The signals are facts; the weights are policy.** The QM can see and change the weights (config file / sliders). Later the weights **learn themselves**: every conflict a human resolves is a labelled example ("this source was right"), and a logistic regression on the 5 signals yields the optimal weights. That's the regression idea.
 
 **Step B: filters.** A source from another country or client is excluded, with the reason shown. A source that copies another source (e.g. a Teams message pasting the doc) **counts only once**.
 
@@ -47,8 +59,8 @@ people    StarGaze (role-based) ┘   appear in the source)        → process s
 - Strength = highest supporting weight + 0.1 per extra independent confirmation (max 1)
 - **Step score = Agreement × Strength**
 - Rules (each one shown as a reason):
-  - **two strong sources (w ≥ 0.7) contradict** → max 45%
-  - **no official doc** → max 70% ("undocumented practice")
+  - **contested:** the second value weighs ≥ 50% of the leading value → max 45% (the model does not choose; a human decides)
+  - **no approved doc or system of record** supports the value → max 70% ("undocumented practice")
   - **no sources** → 0% ("knowledge gap")
 
 **Step D: process score** = average of the step scores weighted by criticality (1–3). **If any critical step is red, the process is "not release-ready".**
@@ -56,10 +68,10 @@ people    StarGaze (role-based) ┘   appear in the source)        → process s
 Thresholds: **≥75% green** (goes into the optimal process) · **50–75% amber** (document / use with caution) · **<50% red** (needs a human, routed to the step owner).
 All weights live in one config file. Every term in the formula becomes a reason line in the UI.
 
-*Check: recent doc vs. old Slack → ≈78%. Recent doc vs. recent C-level recording → capped at 45% (heavy contradiction).*
+*Check: recent approved doc (w≈0.95) vs. old Slack message (w≈0.2) → ≈79%. Recent doc vs. recent recording of the RACI-responsible C-level (w≈0.6) → contested → max 45%.*
 
 ## 6. People: score claims, never people
-- A person's weight comes from their **role relative to the step** (owner or not) plus **recency**. There is no personal score and no ranking of people.
+- A person is scored on the same 5 objective signals as any other source: is the person RACI-responsible for this step, how recent is the statement, is the person still in that role. There is no personal score, no track record, and no ranking of people.
 - StarGaze captures knowledge with consent. People can see and correct their own statements.
 - A disagreement is a knowledge gap to align, not "person X is wrong".
 
@@ -75,7 +87,7 @@ All weights live in one config file. Every term in the formula becomes a reason 
 |---|---|---|
 | **Mattis + Claude** | scoring engine + UI, **push by 21:00** | fix Aikido findings |
 | **Tialys** | product name, story, video script (QM persona), description text | record demo video (<3 min) |
-| **Teammate 3** | Aikido account (hackathon link) + connect the repo **now**; **baseline scan at 21:00 + "before" screenshot** | rescan + "after" screenshot, README check, submit |
+| **Gilles** | Screenpipe + analysis | Aikido account (hackathon link) + connect the repo **now**; **baseline scan at 21:00 + "before" screenshot** | rescan + "after" screenshot, README check, submit |
 
 **Aikido:** https://app.aikido.dev/aipentests/discounts/hackathon-tectonic-aikido → "Continue with GitHub" → connect this repo → AI Code Audit → Code Security Audit.
 

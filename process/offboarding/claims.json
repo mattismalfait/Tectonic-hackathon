@@ -1,0 +1,146 @@
+[
+  {
+    "id": "clm-01",
+    "step_id": "step-1",
+    "source_id": "src-01",
+    "value": "exit date = last working day, registered within 2 working days",
+    "statement": "The termination is registered in payroll within 2 working days of the resignation letter, with the last working day as exit date.",
+    "quote": "registers the termination in the payroll system within 2 working days of receiving the resignation letter. The exit date to register is the last working day under the notice period"
+  },
+  {
+    "id": "clm-02",
+    "step_id": "step-1",
+    "source_id": "src-02",
+    "value": "exit date = last working day, registered within 2 working days",
+    "statement": "The SAP workflow records Termination Date = last working day and requires payroll approval within 2 working days.",
+    "quote": "enters Termination Date = last working day; SD Worx payroll consultant approves within 2 working days (SLA)"
+  },
+  {
+    "id": "clm-03",
+    "step_id": "step-2",
+    "source_id": "src-03",
+    "value": "13 weeks",
+    "statement": "Under the unified statute, an employee with 18 years of seniority who resigns has a notice period of 13 weeks.",
+    "quote": "a director with 18 years of seniority who resigns works a notice period of 13 weeks"
+  },
+  {
+    "id": "clm-04",
+    "step_id": "step-2",
+    "source_id": "src-04",
+    "value": "6 months",
+    "statement": "According to the client CEO, senior employees at Lumina always work a six-month notice period, as stated in their contracts.",
+    "quote": "Our seniors always work six months notice, it's in their contracts."
+  },
+  {
+    "id": "clm-05",
+    "step_id": "step-2",
+    "source_id": "src-05",
+    "value": "4.5 months",
+    "statement": "A 2013 internal note says senior white-collar employees who resign have a notice period of 4.5 months.",
+    "quote": "For senior white-collar employees (annual salary above the legal threshold) the notice period on resignation is 4.5 months."
+  },
+  {
+    "id": "clm-06",
+    "step_id": "step-2",
+    "source_id": "src-06",
+    "value": "1 month",
+    "statement": "The Dutch knowledge base states the employee's notice period is one month regardless of seniority (NL law).",
+    "quote": "Opzegtermijn werknemer: 1 maand."
+  },
+  {
+    "id": "clm-07",
+    "step_id": "step-3",
+    "source_id": "src-07",
+    "value": "15 days after exit",
+    "statement": "The employer can waive the non-compete clause only within 15 days after the exit date; otherwise the indemnity is due.",
+    "quote": "the employer can waive the clause, but only within 15 days after the exit date (end of the employment contract)"
+  },
+  {
+    "id": "clm-08",
+    "step_id": "step-3",
+    "source_id": "src-08",
+    "value": "30 days after exit",
+    "statement": "A 2022 Slack answer says the employer has 30 days after the exit date to waive the non-compete clause.",
+    "quote": "we have 30 days to waive, counted from the exit date"
+  },
+  {
+    "id": "clm-09",
+    "step_id": "step-4",
+    "source_id": "src-09",
+    "value": "pro-rata YEB paid",
+    "statement": "The company CLA grants a pro-rata year-end bonus to employees with at least one year of service who resign.",
+    "quote": "Employees with at least one year of service who leave by resignation receive a pro-rata year-end bonus"
+  },
+  {
+    "id": "clm-10",
+    "step_id": "step-4",
+    "source_id": "src-10",
+    "value": "not paid",
+    "statement": "The payroll engine is configured not to pay a pro-rata year-end bonus on resignation.",
+    "quote": "YEB_PRORATA_ON_RESIGNATION = false"
+  },
+  {
+    "id": "clm-11",
+    "step_id": "step-4",
+    "source_id": "src-11",
+    "value": "pro-rata YEB paid",
+    "statement": "The payroll team notes SAP failed to pay the pro-rata YEB to a recent leaver although the CLA grants it on resignation.",
+    "quote": "Their CLA says pro-rata YEB is due on resignation after 1 year."
+  },
+  {
+    "id": "clm-12",
+    "step_id": "step-5",
+    "source_id": "src-12",
+    "value": "car returned on last working day; BIK stops from the month after",
+    "statement": "The company car is returned on the last working day and the benefit-in-kind stops from the following month.",
+    "quote": "the car comes back on the last working day, keys + fuel card at HQ reception. BIK stops the month after"
+  },
+  {
+    "id": "clm-13",
+    "step_id": "step-5",
+    "source_id": "src-13",
+    "value": "car returned on last working day; BIK stops from the month after",
+    "statement": "The fleet manager sets the car return on the last working day; the benefit in kind stops from the month after.",
+    "quote": "the car comes back on the last working day, and the benefit in kind stops from the month after"
+  },
+  {
+    "id": "clm-14",
+    "step_id": "step-6",
+    "source_id": "src-14",
+    "value": "notify insurer within 30 days of exit via employer portal",
+    "statement": "HR notifies the group insurance provider within 30 days of the exit date via the insurer's employer portal.",
+    "quote": "HR notifies the group insurance provider within 30 days of the exit date through the provider's employer portal"
+  },
+  {
+    "id": "clm-15",
+    "step_id": "step-7",
+    "source_id": "src-15",
+    "value": "Dimona OUT by first working day after exit; C4 + holiday certificate on exit date",
+    "statement": "Dimona OUT is declared by the first working day after exit, and the C4 and holiday certificate are issued on the exit date.",
+    "quote": "Dimona OUT must be declared at the latest on the first working day after the exit date. The C4 (unemployment certificate) and the holiday certificate (vakantieattest) are issued to the employee on the exit date"
+  },
+  {
+    "id": "clm-16",
+    "step_id": "step-7",
+    "source_id": "src-16",
+    "value": "Dimona OUT by first working day after exit; C4 + holiday certificate on exit date",
+    "statement": "SAP automatically sends Dimona OUT on the first working day after the exit and generates C4 and holiday certificate on the exit date.",
+    "quote": "Dimona OUT is sent automatically on the first working day after the Termination Date. C4 and holiday certificate are generated in the final payroll run and published to the employee portal on the Termination Date."
+  },
+  {
+    "id": "clm-17",
+    "step_id": "step-7",
+    "source_id": "src-17",
+    "value": "Dimona OUT by first working day after exit; C4 + holiday certificate on exit date",
+    "statement": "The payroll consultant shows Dimona OUT going out the day after exit and C4 plus holiday certificate handed over on the exit date.",
+    "quote": "The Dimona OUT went out automatically the day after the exit, see the acknowledgement here. Then I check the C4 and the holiday certificate: both generated in the final run and handed over on the exit date."
+  },
+  {
+    "id": "clm-18",
+    "step_id": "step-7",
+    "source_id": "src-18",
+    "value": "Dimona OUT by first working day after exit; C4 + holiday certificate on exit date",
+    "statement": "A Teams message repeats the SD Worx procedure: Dimona OUT by the first working day after exit, C4 and holiday certificate on the exit date.",
+    "quote": "Dimona OUT must be declared at the latest on the first working day after the exit date. The C4 (unemployment certificate) and the holiday certificate (vakantieattest) are issued to the employee on the exit date"
+  }
+]

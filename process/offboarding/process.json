@@ -1,0 +1,84 @@
+{
+  "id": "proc-offboarding-senior",
+  "name": "Offboarding of a senior employee",
+  "client": {
+    "id": "cli-lumina",
+    "name": "Lumina Retail NV",
+    "country": "BE",
+    "joint_committee": "311"
+  },
+  "case": {
+    "employee": "Karel Maes (fictional)",
+    "role": "Store operations director",
+    "seniority_years": 18,
+    "exit_reason": "resignation by employee",
+    "resignation_date": "2026-09-29",
+    "last_working_day": "2026-12-31"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "order": 1,
+      "name": "Register resignation & exit date in payroll",
+      "description": "Record the resignation (event reason RESIGN_EE) and the exit date (= last working day) in SAP SuccessFactors so that the final pay run, Dimona OUT and social documents are triggered.",
+      "criticality": 2,
+      "step_owner_role": "SD Worx payroll consultant"
+    },
+    {
+      "id": "step-2",
+      "order": 2,
+      "name": "Determine notice period",
+      "description": "Determine the legally correct notice period for a resignation by the employee under the Belgian unified statute (eenheidsstatuut), based on seniority, and derive the last working day.",
+      "criticality": 3,
+      "step_owner_role": "Client HR manager"
+    },
+    {
+      "id": "step-3",
+      "order": 3,
+      "name": "Decide on non-compete clause (waive or pay)",
+      "description": "Decide whether the employer waives the non-compete clause (concurrentiebeding) or pays the non-compete indemnity, and notify the employee and payroll within the legal deadline.",
+      "criticality": 3,
+      "step_owner_role": "Client HR manager"
+    },
+    {
+      "id": "step-4",
+      "order": 4,
+      "name": "Calculate final pay: departure holiday pay + pro-rata year-end bonus",
+      "description": "Calculate the final pay including departure holiday pay (vertrekvakantiegeld) and, where the company CLA grants it, the pro-rata year-end bonus (eindejaarspremie).",
+      "criticality": 3,
+      "step_owner_role": "SD Worx payroll consultant"
+    },
+    {
+      "id": "step-5",
+      "order": 5,
+      "name": "Return company car & stop benefit-in-kind",
+      "description": "Organise the return of the company car and fuel card, and stop the benefit-in-kind (VAA/BIK) in payroll from the correct month.",
+      "criticality": 2,
+      "step_owner_role": "Client fleet manager"
+    },
+    {
+      "id": "step-6",
+      "order": 6,
+      "name": "Notify group insurance (pension) provider",
+      "description": "Notify the group insurance (supplementary pension) provider of the exit so the insurer can issue the exit statement and options to the employee.",
+      "criticality": 2,
+      "step_owner_role": "Client HR manager"
+    },
+    {
+      "id": "step-7",
+      "order": 7,
+      "name": "Dimona OUT + social documents (C4, holiday certificate)",
+      "description": "Declare Dimona OUT to the social security and issue the C4 and the holiday certificate (vakantieattest) to the employee.",
+      "criticality": 3,
+      "step_owner_role": "SD Worx payroll consultant"
+    },
+    {
+      "id": "step-8",
+      "order": 8,
+      "name": "Capture the senior's tacit knowledge before exit (handover)",
+      "description": "Capture the undocumented know-how of the departing senior (store network, supplier contacts, peak-season routines) and transfer it to the successor before the last working day.",
+      "criticality": 2,
+      "step_owner_role": "Client COO (line manager)"
+    }
+  ]
+}
