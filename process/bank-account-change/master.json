@@ -1,0 +1,16 @@
+﻿{
+  "process_id": "proc-bank-account-change",
+  "title": "Master SOP: change of salary bank account (IBAN), Lumina Retail NV, BE",
+  "owner_role": "SD Worx quality manager",
+  "version": "1.0",
+  "date": "2026-09-30",
+  "steps": [
+    { "step_id": "step-1", "value": "only via the MyPayslip self-service portal", "statement": "Employees request the change only through the MyPayslip self-service portal; emailed requests are not accepted." },
+    { "step_id": "step-2", "value": "IBAN check digits + account holder name must match", "statement": "Validate the IBAN check digits and make sure the account holder name matches the employee." },
+    { "step_id": "step-3", "value": "call back on the phone number on file", "statement": "Verify the employee's identity by calling back on the phone number already on file (fraud control)." },
+    { "step_id": "step-4", "value": "released only after a second consultant approves (four-eyes)", "statement": "Enter the new IBAN in SAP; it is released only after a second consultant approves it (four-eyes)." },
+    { "step_id": "step-5", "value": "cut-off on the 15th", "statement": "Changes received by the 15th apply to that month's payroll; later changes apply from the next month." },
+    { "step_id": "step-6", "value": "confirm with last 4 IBAN digits + start month", "statement": "Confirm to the employee with the last 4 digits of the new IBAN and the month it applies from." },
+    { "step_id": "step-7", "value": "store in the personnel file for 5 years", "statement": "Keep the request and the checks in the personnel file for 5 years." }
+  ]
+}

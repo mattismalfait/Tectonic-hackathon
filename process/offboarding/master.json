@@ -1,0 +1,17 @@
+﻿{
+  "process_id": "proc-offboarding-senior",
+  "title": "Master SOP: offboarding of a senior employee, Lumina Retail NV, BE",
+  "owner_role": "SD Worx quality manager",
+  "version": "1.0",
+  "date": "2026-09-30",
+  "steps": [
+    { "step_id": "step-1", "value": "exit date = last working day, registered within 2 working days", "statement": "Register the resignation within 2 working days, with the last working day as exit date." },
+    { "step_id": "step-2", "value": "13 weeks", "statement": "Under the unified statute, an employee with 18 years of seniority who resigns works 13 weeks of notice." },
+    { "step_id": "step-3", "value": "15 days after exit", "statement": "The employer can waive the non-compete clause within 15 days after the exit date." },
+    { "step_id": "step-4", "value": "pro-rata YEB paid", "statement": "Pay departure holiday pay and, as the company CLA grants it, the pro-rata year-end bonus." },
+    { "step_id": "step-5", "value": "car returned on last working day; BIK stops from the month after", "statement": "The company car is returned on the last working day; the benefit-in-kind stops from the month after." },
+    { "step_id": "step-6", "value": "notify insurer within 30 days of exit via employer portal", "statement": "Notify the group insurance provider within 30 days of the exit via the employer portal." },
+    { "step_id": "step-7", "value": "Dimona OUT by first working day after exit; C4 + holiday certificate on exit date", "statement": "Declare Dimona OUT by the first working day after the exit; hand over C4 and holiday certificate on the exit date." },
+    { "step_id": "step-8", "value": "structured handover session + written handover before the last working day", "statement": "Capture the senior's know-how in a structured handover session and a written handover before the last working day." }
+  ]
+}
