@@ -52,6 +52,15 @@ class ValidationError extends Error {}
 
 // ---------- storage ----------
 
+// Joins a file name onto a directory without allowing path traversal: only [A-Za-z0-9._-] survive,
+// and the resolved path must stay inside the directory.
+function safeJoin(dir, name) {
+  const clean = String(name).replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '_');
+  const full = path.resolve(dir, clean);
+  if (!full.startsWith(path.resolve(dir) + path.sep)) throw new Error('Invalid file name.');
+  return full;
+}
+
 async function readSubmissions() {
   let names;
   try {
@@ -63,7 +72,7 @@ async function readSubmissions() {
   const submissions = [];
   for (const name of names.filter((n) => n.endsWith('.json'))) {
     try {
-      submissions.push(JSON.parse(await fs.readFile(path.join(SUBMISSIONS_DIR, name), 'utf8')));
+      submissions.push(JSON.parse(await fs.readFile(safeJoin(SUBMISSIONS_DIR, name), 'utf8')));
     } catch {
       // Skip files that are not valid submissions.
     }
@@ -74,13 +83,13 @@ async function readSubmissions() {
 async function writeSubmission(record) {
   await fs.mkdir(SUBMISSIONS_DIR, { recursive: true });
   const fileName = `${record.submitted_at.replace(/[:.]/g, '-')}-${record.job_id}.json`;
-  await fs.writeFile(path.join(SUBMISSIONS_DIR, fileName), JSON.stringify(record, null, 2) + '\n');
+  await fs.writeFile(safeJoin(SUBMISSIONS_DIR, fileName), JSON.stringify(record, null, 2) + '\n');
 }
 
 async function appendEvents(sessionId, events) {
   await fs.mkdir(EVENTS_DIR, { recursive: true });
   // sessionId is a validated UUID, so it is safe as a file name.
-  await fs.appendFile(path.join(EVENTS_DIR, `${sessionId}.jsonl`), events.map((e) => JSON.stringify(e)).join('\n') + '\n');
+  await fs.appendFile(safeJoin(EVENTS_DIR, `${sessionId}.jsonl`), events.map((e) => JSON.stringify(e)).join('\n') + '\n');
 }
 
 // Latest submitted change per employee, shown as "scheduled change" in the UI.
@@ -272,7 +281,7 @@ async function handle(req, res) {
 
   if (req.method === 'GET' && Object.hasOwn(STATIC_FILES, pathname)) {
     const { file, type } = STATIC_FILES[pathname];
-    return send(res, 200, await fs.readFile(path.join(__dirname, 'public', file)), type);
+    return send(res, 200, await fs.readFile(safeJoin(path.join(__dirname, 'public'), file)), type);
   }
 
   if (req.method === 'GET' && pathname === '/api/bootstrap') {

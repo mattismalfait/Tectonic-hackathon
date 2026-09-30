@@ -31,8 +31,12 @@ const formatIban = (iban) => iban.replace(/(.{4})/g, '$1 ').trim();
 const formatDate = (iso) => new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 const fullName = (e) => `${e.firstName} ${e.lastName}`;
 
-async function getJson(url) {
-  const res = await fetch(url);
+// Only same-origin calls to our own API are allowed (no user-controlled hosts, no redirects).
+async function getJson(path) {
+  if (typeof path !== 'string' || !path.startsWith('/api/')) throw new Error('Invalid API path');
+  const url = new URL(path, window.location.origin);
+  if (url.origin !== window.location.origin) throw new Error('Invalid API path');
+  const res = await fetch(url, { redirect: 'error', credentials: 'same-origin' });
   if (!res.ok) throw new Error((await res.json()).error || 'Request failed');
   return res.json();
 }
