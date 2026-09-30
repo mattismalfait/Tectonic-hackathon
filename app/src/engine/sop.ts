@@ -180,3 +180,19 @@ export function sopsToDataset(process: Process, master: SOP, sops: SOP[], source
   }
   return { process, master: masterSop, sources: all, claims }
 }
+
+/**
+ * A dataset with the matcher's results folded in: for every source the matcher checked, its
+ * results replace that source's hand-made claims. The master (gold values) is kept as it is.
+ */
+export function withMatcherResults(data: Dataset, sops: SOP[]): Dataset {
+  if (sops.length === 0) return data
+  const asSop: SOP = { id: data.process.id, name: data.process.name, steps: data.process.steps }
+  const matched = sopsToDataset(data.process, asSop, sops, data.sources)
+  const checked = new Set(matched.claims.map((c) => c.source_id))
+  return {
+    ...data,
+    sources: matched.sources,
+    claims: [...data.claims.filter((c) => !checked.has(c.source_id)), ...matched.claims],
+  }
+}

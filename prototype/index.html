@@ -95,11 +95,11 @@
 
     <section class="card matrix">
       <div class="mhead">
-        <div><h2 class="t">Steps and sources</h2><div class="muted" style="font-size:14px;margin-top:4px">Each dot shows whether that type of source says the same as the official procedure. Click a step to see what differs.</div></div>
+        <div><h2 class="t">Steps and sources</h2><div class="muted" style="font-size:14px;margin-top:4px">Each dot shows whether that type of source confirms the master SOP. Click a step to see what differs.</div></div>
         <button class="toggle" id="onlyDev" aria-pressed="false"><span class="sw"></span>Show only deviations</button>
       </div>
       <div class="legend">
-        <span><i class="dot sm same">✓</i>Same as official</span>
+        <span><i class="dot sm same">✓</i>Same as master</span>
         <span><i class="dot sm diff">✕</i>Different</span>
         <span><i class="dot sm mixed"></i>Mixed</span>
         <span><i class="dot sm none">–</i>No source</span>
@@ -144,11 +144,11 @@
     <section class="card" style="margin-top:20px">
       <div class="card-h"><h2>From sources to a step score</h2></div>
       <div class="rules">
-        <div class="rule"><b>1. Filter</b><div>A source about another country is not counted for this procedure. A source that repeats another one (a copy or a pasted message) counts as a confirmation with half the bonus of an independent source.</div></div>
-        <div class="rule"><b>2. Agreement</b><div>Sources are grouped by what they say. <span class="formula">agreement = weight of the leading value ÷ total weight</span></div></div>
-        <div class="rule"><b>3. Strength</b><div><span class="formula">strength = strongest supporting source + 0.10 per independent confirmation + 0.05 per repeat</span>, maximum 100%.</div></div>
-        <div class="rule"><b>4. Step score</b><div><span class="formula">score = agreement × strength</span></div></div>
-        <div class="rule"><b>5. Safety rules</b><div><b>Contested:</b> if the second value weighs at least half of the leading value, the score is capped at 45% and a human decides.<br><b>Undocumented:</b> if no approved document or system of record supports the value, the score is capped at 70%.<br><b>Knowledge gap:</b> no sources means 0%.</div></div>
+        <div class="rule"><b>1. Filter</b><div>A source about another country is not counted for this procedure. A source that repeats another one (a copy or a pasted message) counts for half its weight.</div></div>
+        <div class="rule"><b>2. Compare to the master</b><div>The quality manager's master SOP holds one value per step. Every source either <b>confirms</b> the master or <b>differs</b> from it.</div></div>
+        <div class="rule"><b>3. Step score</b><div><span class="formula">score = weight of sources that confirm the master ÷ weight of all sources that mention the step</span></div></div>
+        <div class="rule"><b>4. Safety rules</b><div><b>Thin evidence:</b> if only low-weight sources (&lt; 0.5) confirm the master, the score is capped at 70%.<br><b>Undocumented:</b> if no doc or SAP covers the step, the score is capped at 70%.<br><b>Knowledge gap:</b> no sources means 0%.</div></div>
+        <div class="rule"><b>5. A human decides</b><div>When the step is red, or a recent doc or SAP itself differs from the master, the model does not choose: the quality manager confirms the master or changes it. The decision becomes the reference; sources that say otherwise are listed but no longer counted.</div></div>
         <div class="rule"><b>6. Bands</b><div><span class="pill green"><i></i>Trusted ≥ 75%</span> <span class="pill amber"><i></i>Check 50–74%</span> <span class="pill red"><i></i>Needs a human &lt; 50%</span></div></div>
         <div class="rule"><b>7. Procedure score</b><div>Average of the step scores, weighted by criticality (1 to 3). If any critical step is red, the procedure is not release-ready.</div></div>
         <div class="rule"><b>People</b><div>We score claims, never people. A person is scored on the same five signals as any source: responsible for the step, how recent, still in the role. No personal ranking.</div></div>
@@ -183,7 +183,9 @@
 
 <!-- Order matters: data and content first, then the engine, then the screens. -->
 <script src="data/bank-account-change.js"></script>
+<script src="data/offboarding.js"></script>
 <script src="content.js"></script>
+<script src="engine.bundle.js"></script>
 <script src="engine.js"></script>
 <script src="app.js"></script>
 </body>

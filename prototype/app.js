@@ -21,8 +21,10 @@ const srcName = s => s.type === 'chat' ? s.title.replace(/\s*\(\d{4}-\d\d-\d\d\)
 const srcMeta = s => [s.system, fmt(s.date), s.approval_status === 'approved' ? 'approved' : null, s.owner_status === 'left' ? 'owner left' : s.owner_status === 'moved' ? 'owner moved' : null].filter(Boolean).join(' · ');
 function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2800); }
 
-/* official reference per step = the source set in content.js (OFFICIAL_SOURCE_ID), or the QM decision */
-const officialValue = step => resolutions[step.id] || (DATA.claims.find(c => c.step_id === step.id && c.source_id === OFFICIAL_SOURCE_ID) || {}).value;
+/* reference per step = the master SOP's value, or the QM decision */
+const officialValue = step => resolutions[step.id] || ((MASTER && MASTER.steps.find(m => m.step_id === step.id)) || {}).value;
+/* sources that count for a step (not excluded, not overruled, not the decision itself) */
+const countedEv = r => r.ev.filter(e => (e.status === 'supports' || e.status === 'contradicts') && e.s.type !== 'decision');
 
 /* ---------- router ---------- */
 let current = null, alertShown = false;
@@ -47,7 +49,7 @@ function render() {
 
 /* ---------- home ---------- */
 function renderHome() {
-  const p = scoreProcess();
+  const p = scoreProcess(), OTHER_PROCEDURES = otherProcedures();
   const open = p.steps.filter(r => r.contested && !r.res);
   const sum = k => OTHER_PROCEDURES.reduce((a, o) => a + o[k], 0);
   const total = OTHER_PROCEDURES.length + 1;
@@ -77,16 +79,16 @@ function renderHome() {
 function stepQuestion(r) {
   if (!r.runner) return r.step.name;
   const short = v => v.replace('only via the MyPayslip self-service portal', 'portal only').replace('by email via client HR', 'email via client HR').replace('released only after a second consultant approves (four-eyes)', 'four-eyes approval').replace('active as soon as the consultant saves it', 'active once saved');
-  return `${short(officialValue(r.step))} or ${short(r.groups.map(g => g.value).find(v => v !== officialValue(r.step)) || r.runner.value)}?`;
+  return `${short(officialValue(r.step))} or ${short(r.runner.value)}?`;
 }
 document.addEventListener('click', e => { if (e.target.closest('[data-demo]')) toast('In this prototype only the bank account procedure is worked out.'); });
 
 /* ---------- procedure ---------- */
 let openStep = 'step-4';
 function renderPicker(p, band) {
-  const off = SRC[OFFICIAL_SOURCE_ID];
+  const OTHER_PROCEDURES = otherProcedures();
   $('#picker .pn').textContent = DATA.process.name;
-  $('#ctxline').innerHTML = `<span>Client: ${esc(DATA.process.client.name)}</span><span>${esc({ BE: 'Belgium', NL: 'Netherlands' }[DATA.process.client.country] || DATA.process.client.country)}${DATA.process.client.joint_committee ? ' · PC ' + esc(DATA.process.client.joint_committee) : ''}</span>` + (off ? `<span>Official procedure: ${esc(srcName(off))} (${new Date(off.date).getUTCFullYear()})</span>` : '');
+  $('#ctxline').innerHTML = `<span>Client: ${esc(DATA.process.client.name)}</span><span>${esc({ BE: 'Belgium', NL: 'Netherlands' }[DATA.process.client.country] || DATA.process.client.country)}${DATA.process.client.joint_committee ? ' · PC ' + esc(DATA.process.client.joint_committee) : ''}</span>` + (MASTER ? `<span>Master SOP v${esc(MASTER.version)} · ${esc(MASTER.owner_role)} · ${fmt(MASTER.date)}</span>` : '');
   const opts = [{ name: DATA.process.name, steps: DATA.process.steps.length, sources: DATA.sources.length, score: p.score, band, cur: true }]
     .concat(OTHER_PROCEDURES.map(o => ({ ...o, band: o.score >= .75 ? 'green' : o.score >= .5 ? 'amber' : 'red' })));
   $('#options').innerHTML = opts.map(o => `<div class="opt ${o.cur ? 'cur' : ''}" data-name="${esc(o.name.toLowerCase())}" ${o.cur ? '' : 'data-demo="1"'}><div><div class="on">${esc(o.name)}</div><div class="om">${o.steps} steps · ${o.sources} sources</div></div><span class="pill ${o.band}">${pct(o.score)}</span></div>`).join('');
@@ -108,13 +110,13 @@ function renderProcedure(arg) {
   let html = `<div class="gh first">Step</div>${TYPES.map(([t, l]) => `<div class="gh c">${l}${t === 'person' ? '<small>StarGaze</small>' : ''}</div>`).join('')}<div class="gh">Trust</div><div class="gh"></div>`;
   for (const r of p.steps) {
     const ref = officialValue(r.step);
-    const counted = r.ev.filter(e => e.status !== 'excluded' && e.s.type !== 'decision');
+    const counted = countedEv(r);
     const cells = TYPES.map(([t]) => {
       const es = counted.filter(e => e.s.type === t);
       if (!es.length) return '<span class="dot none" title="No source">–</span>';
-      const same = es.filter(e => e.c.value === ref).length;
+      const same = es.filter(e => e.status === 'supports').length;
       const k = same === es.length ? 'same' : same === 0 ? 'diff' : 'mixed';
-      return `<span class="dot ${k}" title="${same} same, ${es.length - same} different">${k === 'same' ? '✓' : k === 'diff' ? '✕' : ''}</span>`;
+      return `<span class="dot ${k}" title="${same} confirm the master, ${es.length - same} differ">${k === 'same' ? '✓' : k === 'diff' ? '✕' : ''}</span>`;
     });
     const b = r.res ? 'green' : r.band;
     const dev = !r.res && (r.band !== 'green');
@@ -143,28 +145,30 @@ function renderProcedure(arg) {
 }
 
 function detailHTML(r, ref) {
-  const counted = r.ev.filter(e => e.status !== 'excluded' && e.s.type !== 'decision');
-  const refEv = counted.filter(e => e.c.value === ref);
-  const otherVals = [...new Set(counted.filter(e => e.c.value !== ref).map(e => e.c.value))];
+  const counted = countedEv(r);
+  const refEv = counted.filter(e => e.status === 'supports');
+  const others = (r.groups || []).slice(1);
+  const otherVals = others.map(g => g.value);
   const li = es => es.map(e => `<li><span class="ty">${TYPE_LABEL[e.s.type]}</span><span>${esc(srcName(e.s))}</span><span class="me">${fmt(e.s.date)}${e.s.owner_status === 'left' ? ' · owner left' : e.s.owner_status === 'moved' ? ' · moved' : ''}</span></li>`).join('');
-  const refLabel = r.res ? 'Decided by the quality manager' : otherVals.length ? 'Official procedure says' : 'All sources say';
+  const refLabel = r.res ? 'Decided by the quality manager' : otherVals.length ? 'Master SOP says' : 'Master SOP · all sources confirm';
   let html = `<div class="detail"><div class="compare ${otherVals.length ? '' : 'one'}">
     <div class="side"><div class="k">${refLabel}</div><div class="v">${esc(cap(ref || '–'))}</div><ul>${li(refEv)}</ul></div>
-    ${otherVals.map(v => `<div class="side b"><div class="k">Other sources say</div><div class="v">${esc(cap(v))}</div><ul>${li(counted.filter(e => e.c.value === v))}</ul></div>`).join('')}
+    ${others.map(g => `<div class="side b"><div class="k">Differs from the master</div><div class="v">${esc(cap(g.value))}</div><ul>${li(g.ev)}</ul></div>`).join('')}
   </div>`;
-  const ex = r.ev.filter(e => e.status === 'excluded'), echoes = counted.filter(e => e.echo);
-  if (ex.length || echoes.length) html += `<div class="excl">${ex.map(e => `Not counted: ${esc(srcName(e.s))} (${e.reason.toLowerCase()}).`).join(' ')} ${echoes.map(e => `${esc(srcName(e.s))} repeats ${esc(srcName(e.echo))}, so it counts as a half confirmation.`).join(' ')}</div>`;
+  const ex = r.ev.filter(e => e.status === 'excluded' || e.status === 'overruled'), echoes = counted.filter(e => e.echo);
+  const mismatch = r.x ? r.x.crossChecks.filter(c => !c.match) : [];
+  if (ex.length || echoes.length || mismatch.length) html += `<div class="excl">${mismatch.map(c => esc(c.sentence)).join(' ')} ${ex.map(e => `Not counted: ${esc(srcName(e.s))} (${esc(e.reason || '')}).`).join(' ')} ${echoes.map(e => `${esc(srcName(e.s))} repeats ${esc(srcName(e.echo))}, so it counts for half.`).join(' ')}</div>`;
   const ctx = CONTEXT[r.step.id] || {};
   if (r.res) {
     const nx = ctx.next ? (ctx.next[r.res] || ctx.next['*']) : 'Next: update the sources that say otherwise.';
     html += `<div class="done">✓ Decided: “${esc(cap(r.res))}”. ${esc(nx)}</div>`;
   } else if (r.contested) {
     const opts = r.groups.slice(0, 2).map(g => g.value);
-    html += `<div class="todo"><p><small>What to do</small>${esc(ctx.todo || 'Sources disagree. The model does not choose: decide which value is right.')}</p>
+    html += `<div class="todo"><p><small>What to do</small>${esc(ctx.todo || 'Sources differ from the master SOP. Decide which value is right: confirm the master or change it.')}</p>
       <button class="btn white decide">Decide</button><button class="btn ghost ask">Ask the owner</button>
       <div class="choice"><span>Which one is right?</span>${opts.map(o => `<button class="btn pick" data-step="${r.step.id}" data-v="${esc(o)}">${esc(cap(o))}</button>`).join('')}</div></div>`;
   } else if (r.band === 'amber' || (ctx.todo && otherVals.length)) {
-    html += `<div class="todo"><p><small>What to do</small>${esc(ctx.todo || 'Minor contradiction: check the older sources.')}</p><button class="btn white remind">Send reminder</button></div>`;
+    html += `<div class="todo"><p><small>What to do</small>${esc(ctx.todo || (r.x && r.x.calculation.cap ? r.x.calculation.cap.reason : 'Some sources differ from the master: update or retire them.'))}</p><button class="btn white remind">Send reminder</button></div>`;
   }
   html += `<div class="links"><a data-go="#/why/${r.step.id}">Why ${pct(r.score)}? See how this score is built →</a><a href="#" class="opensrc">Open the sources ↗</a></div></div>`;
   return html;
@@ -195,38 +199,43 @@ function renderWhy(stepId) {
   const r = scoreStep(step);
   const b = r.res ? 'green' : r.band;
   const f2 = x => x.toFixed(2);
-  let sentence;
-  if (r.band === 'gap') sentence = 'No source describes this step. That is a knowledge gap.';
-  else if (r.res) sentence = `The quality manager decided “${r.res}”. That decision is an approved, recent source, so it outweighs everything that said otherwise.`;
-  else if (r.contested) sentence = `Sources disagree. “${cap(r.lead.value)}” weighs ${f2(r.lead.weight)}, “${r.runner.value}” weighs ${f2(r.runner.weight)}. The second value weighs more than half of the first, so the model does not choose: a human decides.`;
-  else if (r.runner) sentence = `Most of the weight supports “${r.lead.value}”. “${r.runner.value}” comes from older or weaker sources (${f2(r.runner.weight)} against ${f2(r.lead.weight)}), so the leading value holds.`;
-  else sentence = `All ${r.lead.ev.length} sources say the same: “${r.lead.value}”.`;
-  const rule = r.contested ? { k: 'Rule applied', v: '≤ 45%', p: 'Contested: capped at 45%, a human decides.' }
-    : r.undocumented ? { k: 'Rule applied', v: '≤ 70%', p: 'Undocumented: no approved document or system supports it.' }
-    : { k: 'Rules', v: 'None', p: 'Not contested and backed by an approved document or system.' };
-  const strengthTxt = `Strongest source ${f2(r.top ? r.top.w : 0)}` + (r.ind ? ` + ${r.ind} confirmation${r.ind > 1 ? 's' : ''} × 0.10` : '') + (r.ech ? ` + ${r.ech} repeat × 0.05` : '') + ', max 100%.';
+  const calc = r.x.calculation, capped = calc.cap;
+  const sentence = r.res
+    ? `The quality manager decided “${r.res}”. That decision is now the reference for this step; sources that say otherwise are listed but no longer counted.`
+    : r.x.headline;
+  const rule = capped ? { v: '≤ ' + pct(capped.value), p: capped.reason } : { v: 'None', p: 'Enough strong sources, and a doc or SAP covers the step.' };
   const sigCell = (k, v) => k === 'recent' || (k === 'ownerActive' && v > 0 && v < 1) ? `<span class="part">${pct(v)}</span>` : v ? '<span class="yes">✓</span>' : '<span class="no">✕</span>';
+  const off = e => e.status === 'excluded' || e.status === 'overruled';
   const evRow = e => `
-    <div class="src ${e.status === 'excluded' || e.status === 'overruled' ? 'dim' : ''}"><div class="n">${TYPE_LABEL[e.s.type]} · ${esc(srcName(e.s))}</div><div class="m">${esc(srcMeta(e.s))}${e.echo ? ' · repeats ' + esc(srcName(e.echo)) : ''}${e.reason ? ' · ' + esc(e.reason.toLowerCase()) : ''}</div><q>${esc(e.c.quote)}</q></div>
-    ${['designated', 'approved', 'recent', 'reviewed', 'ownerActive'].map(k => `<div class="sg ${e.status === 'excluded' || e.status === 'overruled' ? 'dim' : ''}">${sigCell(k, e.g[k])}</div>`).join('')}
-    <div class="wcell ${e.status === 'excluded' || e.status === 'overruled' ? 'dim' : ''}"><div class="wbar"><b>${f2(e.w)}</b><div class="bar"><i style="width:${e.w * 100}%;background:${e.status === 'contradicts' ? COL.red : e.status === 'supports' ? COL.green : '#B9BCC0'}"></i></div></div></div>`;
+    <div class="src ${off(e) ? 'dim' : ''}"><div class="n">${TYPE_LABEL[e.s.type]} · ${esc(srcName(e.s))}</div><div class="m">${esc(srcMeta(e.s))}${e.echo ? ' · repeats ' + esc(srcName(e.echo)) + ', counts for half' : ''}${e.reason ? ' · ' + esc(e.reason) : ''}</div><q>${esc(e.c.quote)}</q></div>
+    ${['designated', 'approved', 'recent', 'reviewed', 'ownerActive'].map(k => `<div class="sg ${off(e) ? 'dim' : ''}">${sigCell(k, e.g[k])}</div>`).join('')}
+    <div class="wcell ${off(e) ? 'dim' : ''}"><div class="wbar"><b>${f2(e.eff)}</b><div class="bar"><i style="width:${e.eff * 100}%;background:${e.status === 'contradicts' ? COL.red : e.status === 'supports' ? COL.green : '#B9BCC0'}"></i></div></div></div>`;
   let rows = '';
   (r.groups || []).forEach((g, i) => {
-    rows += `<div class="grp ${i === 0 ? 'lead' : 'other'}">${i === 0 ? '✓ Leading value' : '✕ Other value'}: “${esc(cap(g.value))}” <span class="w">weight ${f2(g.weight)}</span></div>` + [...g.ev].sort((a, b) => b.w - a.w).map(evRow).join('');
+    rows += `<div class="grp ${i === 0 ? 'lead' : 'other'}">${i === 0 ? (r.res ? '✓ Decided' : '✓ Confirms the master') : '✕ Differs'}: “${esc(cap(g.value))}” <span class="w">weight ${f2(g.weight)}</span></div>` + [...g.ev].sort((a, b) => b.eff - a.eff).map(evRow).join('');
   });
-  const off = r.ev.filter(e => e.status === 'excluded' || e.status === 'overruled');
-  if (off.length) rows += `<div class="grp off">Not counted</div>` + off.map(evRow).join('');
+  const notCounted = r.ev.filter(off);
+  if (notCounted.length) rows += `<div class="grp off">Not counted</div>` + notCounted.map(evRow).join('');
+  const cats = Object.values(r.x.categories);
 
   $('#whyPage').innerHTML = `
     <button class="back" data-go="#/procedure/${step.id}">←  ${esc(DATA.process.name)}</button>
     <div class="headrow">${ring(r.score, b, 84, 11)}<div><div class="muted" style="font-size:14px;font-weight:600">Step ${step.order} of ${DATA.process.steps.length} · why this score</div><h1 style="margin-top:4px">${esc(step.name)}: ${pct(r.score)}</h1><span class="pill ${b}">${bandLabel(r)}</span></div></div>
     <p class="lead">${esc(sentence)}</p>
+    <p class="muted" style="margin:0 0 18px">Master SOP: “${esc(r.x.master.value)}”${r.x.master.statement ? ' · ' + esc(r.x.master.statement) : ''}</p>
     ${r.band === 'gap' ? '' : `<div class="calc">
-      <div class="box"><div class="k">Agreement</div><div class="v">${pct(r.agreement)}</div><p>Leading value ${f2(r.lead.weight)} ÷ all counted sources ${f2(r.total)}.</p></div><div class="op">×</div>
-      <div class="box"><div class="k">Strength</div><div class="v">${pct(r.strength)}</div><p>${strengthTxt}</p></div><div class="op">→</div>
-      <div class="box"><div class="k">${rule.k}</div><div class="v">${rule.v}</div><p>${rule.p} Raw score ${pct(r.raw)}.</p></div><div class="op">=</div>
+      <div class="box"><div class="k">Confirms the master</div><div class="v">${f2(calc.weightConfirming)}</div><p>Summed weight of the sources that say what the master says.</p></div><div class="op">÷</div>
+      <div class="box"><div class="k">All counted sources</div><div class="v">${f2(calc.weightTotal)}</div><p>Confirming ${f2(calc.weightConfirming)} + differing ${f2(calc.weightDiffering)}. A repeat counts for half.</p></div><div class="op">→</div>
+      <div class="box"><div class="k">Rule applied</div><div class="v">${rule.v}</div><p>${esc(rule.p)} Conformance ${pct(calc.conformance)}.</p></div><div class="op">=</div>
       <div class="box final ${b}"><div class="k">Trust score</div><div class="v">${pct(r.score)}</div><p>${bandLabel(r)}. Bands: 75% trusted, 50% check.</p></div>
     </div>`}
+    <section class="card" style="margin-bottom:20px">
+      <div class="card-h"><h2>Per source type, compared to the master</h2></div>
+      <div class="rules">
+        ${cats.map(c => `<div class="rule"><b>${esc(c.label)}</b><div>${esc(c.summary)}</div></div>`).join('')}
+        ${r.x.crossChecks.length ? `<div class="rule"><b>Cross-checks</b><div>${r.x.crossChecks.map(c => (c.match ? '✓ ' : '✕ ') + esc(c.sentence)).join('<br>')}</div></div>` : ''}
+      </div>
+    </section>
     <section class="card evtable">
       <div class="card-h"><h2>Every source, and why it weighs what it weighs</h2><div class="muted">Five objective signals per source. Equal weights (20% each) unless the quality manager changes them in the <a data-go="#/model">score model</a>.</div></div>
       <div class="ev"><div class="h">Source · what it says</div><div class="h">Designated</div><div class="h">Approved</div><div class="h">Recent</div><div class="h">Reviewed</div><div class="h">Owner active</div><div class="h">Weight</div>${rows}</div>
@@ -264,9 +273,10 @@ function playAlert() {
   const ni = document.getElementById('newItem'); if (ni) { ni.classList.remove('flash'); void ni.offsetWidth; ni.classList.add('flash'); }
   const at = (ms, fn) => timers.push(setTimeout(fn, ms));
   at(350, () => { $('#backdrop').classList.add('on'); a.classList.add('in'); });
+  const target = scoreStep(DATA.process.steps.find(s => s.id === 'step-4')).score, tp = Math.round(target * 100);
   at(1000, () => {
-    rv.style.transition = 'stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1)'; rv.style.strokeDashoffset = 188.5 * (1 - .45);
-    const start = performance.now(); (function tick(now) { const p = Math.min(1, (now - start) / 1000); $('#aNum').textContent = Math.round(45 * (1 - Math.pow(1 - p, 3))) + '%'; if (p < 1) requestAnimationFrame(tick); })(start);
+    rv.style.transition = 'stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1)'; rv.style.strokeDashoffset = 188.5 * (1 - target);
+    const start = performance.now(); (function tick(now) { const p = Math.min(1, (now - start) / 1000); $('#aNum').textContent = Math.round(tp * (1 - Math.pow(1 - p, 3))) + '%'; if (p < 1) requestAnimationFrame(tick); })(start);
   });
   document.querySelectorAll('.asrc').forEach((el, i) => at(1300 + i * 220, () => el.classList.add('show')));
   at(2100, () => $('.aact').classList.add('show'));

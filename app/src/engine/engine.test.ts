@@ -99,6 +99,18 @@ describe('scoring engine', () => {
     expect(() => scoreProcess(ds, undefined, TODAY)).not.toThrow()
   })
 
+  it('a QM decision in master mode becomes the reference and overrules differing sources', () => {
+    const d = DATASETS[0]
+    const before = scoreProcess(d, undefined, TODAY).steps.find((s) => s.step.id === 'step-4')!
+    expect(before.contested).toBe(true) // the recent approved doc differs from the master
+    const value = d.master!.steps.find((s) => s.step_id === 'step-4')!.value
+    const res = { 'step-4': { stepId: 'step-4', value, rationale: 'SAP enforces it', decidedBy: 'Quality manager', date: '2026-09-30' } }
+    const after = scoreProcess(d, undefined, TODAY, res).steps.find((s) => s.step.id === 'step-4')!
+    expect(after.contested).toBe(false)
+    expect(after.score).toBe(1)
+    expect(after.evidence.filter((e) => e.status === 'overruled').map((e) => e.source.id).sort()).toEqual(['src-01', 'src-02'])
+  })
+
   it('without a master the engine falls back to consensus scoring', () => {
     const { master: _master, ...noMaster } = DATASETS[0]
     const r = scoreProcess(noMaster, undefined, TODAY)

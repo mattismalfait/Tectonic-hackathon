@@ -1,4 +1,4 @@
-﻿// Layer 3 (master mode): compare every source's SOP to the master SOP, step by step.
+// Layer 3 (master mode): compare every source's SOP to the master SOP, step by step.
 // The master is the gold. A step scores high when the weighted evidence confirms the master,
 // low when heavy (new, approved, designated) sources differ from it. Every number comes with a sentence.
 
@@ -88,7 +88,7 @@ function toComparison(e: ScoredEvidence, masterValue: string, today: Date): Sour
     age: ageMonths <= RECENT_MONTHS ? 'new' : 'old',
     weight: effective(e),
     signals: e.signals,
-    verdict: e.status === 'excluded' ? 'excluded' : e.status === 'supports' ? 'confirms' : 'differs',
+    verdict: e.status === 'excluded' || e.status === 'overruled' ? 'excluded' : e.status === 'supports' ? 'confirms' : 'differs',
     says: e.claim.value,
     statement: e.claim.statement,
     quote: e.claim.quote,
@@ -191,16 +191,26 @@ export function scoreStepMaster(
   today: Date,
   resolution?: Resolution,
 ): StepResult {
-  const m = master.steps.find((s) => s.step_id === step.id) ?? { step_id: step.id, value: '(not in master)', statement: '' }
+  const gold = master.steps.find((s) => s.step_id === step.id) ?? { step_id: step.id, value: '(not in master)', statement: '' }
+  // A QM decision becomes the reference for this step: it confirms the master or replaces its value.
+  const m = resolution ? { step_id: step.id, value: resolution.value, statement: resolution.rationale } : gold
+  const confirmsGold = norm(m.value) === norm(gold.value)
   const { evidence, reasons: collectReasons } = collectEvidence(step, data, weights, today, resolution)
 
   for (const e of evidence) {
     if (e.status === 'excluded') continue
-    const matches = e.claim.matches_master ?? norm(e.claim.value) === norm(m.value)
+    const matches =
+      e.source.type === 'decision' ||
+      (confirmsGold && e.claim.matches_master !== undefined ? e.claim.matches_master : norm(e.claim.value) === norm(m.value))
     e.status = matches ? 'supports' : 'contradicts'
+    // After a decision, sources that say otherwise are known to be wrong: listed, not counted.
+    if (resolution && !matches) {
+      e.status = 'overruled'
+      e.excludedReason = `overruled by the decision of ${resolution.decidedBy} on ${resolution.date}`
+    }
   }
 
-  const counted = evidence.filter((e) => e.status !== 'excluded')
+  const counted = evidence.filter((e) => e.status !== 'excluded' && e.status !== 'overruled')
   const comps = evidence.filter((e) => categoryOf(e.source.type) !== null).map((e) => toComparison(e, m.value, today))
   const categories = Object.fromEntries(
     CATEGORY_ORDER.map((c) => [c, categoryView(c, comps.filter((x) => categoryOf(x.type) === c), m.value)]),
@@ -247,7 +257,7 @@ export function scoreStepMaster(
       weightTotal: wT,
       conformance,
       cap: capInfo,
-      formula: `conformance = confirming weight ${wC.toFixed(2)} / total weight ${wT.toFixed(2)} = ${pct(conformance)}` + (capInfo ? ` â†’ capped at ${pct(capInfo.value)}` : ''),
+      formula: `conformance = confirming weight ${wC.toFixed(2)} / total weight ${wT.toFixed(2)} = ${pct(conformance)}` + (capInfo ? ` → capped at ${pct(capInfo.value)}` : ''),
     },
   }
 
@@ -263,6 +273,13 @@ export function scoreStepMaster(
   }
   const [masterGroup, ...rest] = [...groupMap.values()]
   const groups = [masterGroup, ...rest.sort((a, b) => b.weight - a.weight)]
+
+  // Needs a decision: sources differ from the master and either the step is red, or a recent doc
+  // or SAP itself differs (the official record contradicts the master; someone must pick one).
+  const officialDiffers = counted.some(
+    (e) => e.status === 'contradicts' && (e.source.type === 'doc' || e.source.type === 'business_app') && monthsBetween(e.source.date, today) < RECENT_MONTHS,
+  )
+  const contested = !resolution && counted.length > 0 && rest.length > 0 && (bandOf(score, true) === 'red' || officialDiffers)
 
   const reasons = [
     explanation.headline,
@@ -282,8 +299,8 @@ export function scoreStepMaster(
     agreement: conformance,
     strength: conformance > 0 ? score / conformance : 0,
     reasons,
-    contested: false,
-    undocumented: false,
+    contested,
+    undocumented: !documented,
     resolution,
     explanation,
   }

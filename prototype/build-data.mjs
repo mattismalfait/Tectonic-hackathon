@@ -1,17 +1,18 @@
 // Regenerates prototype/data/<name>.js from the process JSON files, so the prototype
-// can run straight from the file system (no server, no fetch).
+// can run straight from the file system (no server, no fetch). Includes the master SOP and
+// the matcher's results (data/<name>/sops/*.json, see data/CONVENTION.md); engine.js folds them in.
 //
 // Usage (from the repo root):
 //   node prototype/build-data.mjs                      -> bank-account-change
 //   node prototype/build-data.mjs offboarding          -> any folder in data/ (or process/)
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
+import { readFileSync, readdirSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = join(here, '..')
 const names = process.argv.slice(2)
-const SOURCE_FIELDS = ['id', 'title', 'type', 'system', 'author_role', 'owner_status', 'approval_status', 'date', 'country', 'origin', 'last_reviewed']
+const SOURCE_FIELDS = ['id', 'title', 'type', 'system', 'author_role', 'owner_status', 'approval_status', 'date', 'country', 'client_specific', 'origin', 'last_reviewed']
 
 for (const name of names.length ? names : ['bank-account-change']) {
   const dir = ['data', 'process'].map((d) => join(root, d, name)).find((d) => existsSync(d))
@@ -19,19 +20,25 @@ for (const name of names.length ? names : ['bank-account-change']) {
     console.error(`No folder data/${name} or process/${name}`)
     process.exit(1)
   }
-  const read = (file) => JSON.parse(readFileSync(join(dir, file), 'utf8'))
+  const read = (file) => JSON.parse(readFileSync(join(dir, file), 'utf8').replace(/^﻿/, ''))
   const proc = read('process.json')
   const sources = read('sources.json')
   const claims = read('claims.json')
+  const master = existsSync(join(dir, 'master.json')) ? read('master.json') : null
+  const sopDir = join(dir, 'sops')
+  const sops = existsSync(sopDir) ? readdirSync(sopDir).filter((f) => f.endsWith('.json')).map((f) => read(join('sops', f))) : []
 
   const out = {
     process: {
+      id: proc.id,
       name: proc.name,
       client: proc.client,
       steps: proc.steps.map(({ id, order, name, criticality, description, step_owner_role }) => ({ id, order, name, criticality, description, step_owner_role })),
     },
     sources: sources.map((s) => Object.fromEntries(SOURCE_FIELDS.filter((k) => s[k] !== undefined).map((k) => [k, s[k]]))),
-    claims: claims.map(({ step_id, source_id, value, quote }) => ({ step_id, source_id, value, quote })),
+    claims: claims.map(({ id, step_id, source_id, value, statement, quote, matches_master }) => ({ id, step_id, source_id, value, statement, quote, matches_master })),
+    master,
+    sops,
   }
 
   mkdirSync(join(here, 'data'), { recursive: true })
@@ -42,5 +49,5 @@ for (const name of names.length ? names : ['bank-account-change']) {
       `window.OURSDBRAIN_DATA = window.OURSDBRAIN_DATA || {};\n` +
       `window.OURSDBRAIN_DATA[${JSON.stringify(name)}] = ${JSON.stringify(out, null, 2)};\n`,
   )
-  console.log(`Wrote ${relative(root, file)}: ${out.process.steps.length} steps, ${out.sources.length} sources, ${out.claims.length} claims`)
+  console.log(`Wrote ${relative(root, file)}: ${out.process.steps.length} steps, ${out.sources.length} sources, ${out.claims.length} claims, master ${master ? 'yes' : 'no'}, ${sops.length} matcher results`)
 }
