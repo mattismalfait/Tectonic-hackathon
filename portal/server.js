@@ -9,10 +9,13 @@ const crypto = require('node:crypto');
 const ROOT = path.join(__dirname, '..');
 const SUBMISSIONS_DIR = path.join(ROOT, 'submissions');
 const EVENTS_DIR = path.join(ROOT, 'events');
+const INPUT_DIR = path.join(ROOT, 'input'); // matcher input: input/<what>/<date>_<who>.json
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = '127.0.0.1';
 const MAX_BODY_BYTES = 64 * 1024;
 const MAX_EVENTS_PER_BATCH = 100;
+const MAX_RECORDING_BYTES = 10 * 1024 * 1024;
+const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const EVENT_SCHEMA = 'tectonic.ui-event/v1';
 
 const { company, employees } = require('./data/employees.json');
@@ -81,6 +84,31 @@ async function appendEvents(sessionId, events) {
   await fs.mkdir(EVENTS_DIR, { recursive: true });
   // sessionId is a validated UUID, so it is safe as a file name.
   await fs.appendFile(path.join(EVENTS_DIR, `${sessionId}.jsonl`), events.map((e) => JSON.stringify(e)).join('\n') + '\n');
+}
+
+// A finished recorder recording, stored as matcher input. A second one for the same who and day gets -2, -3, …
+async function writeRecording(body) {
+  if (!isPlainObject(body)) throw new ValidationError('Invalid request body.');
+  const { what, who, events } = body;
+  if (typeof what !== 'string' || !SLUG.test(what) || what.length > 80) throw new ValidationError('Invalid process name.');
+  if (typeof who !== 'string' || !SLUG.test(who) || who.length > 80) throw new ValidationError('Invalid who.');
+  if (!Array.isArray(events) || events.length === 0 || !events.every(isPlainObject)) throw new ValidationError('Invalid events.');
+  const started = Date.parse(events[0].time);
+  if (Number.isNaN(started)) throw new ValidationError('Invalid recording start time.');
+  const date = new Date(started).toISOString().slice(0, 10);
+
+  const dir = path.join(INPUT_DIR, what);
+  await fs.mkdir(dir, { recursive: true });
+  const json = JSON.stringify(events, null, 2) + '\n';
+  for (let n = 1; ; n++) {
+    const name = `${date}_${who}${n > 1 ? `-${n}` : ''}.json`;
+    try {
+      await fs.writeFile(path.join(dir, name), json, { flag: 'wx' });
+      return `input/${what}/${name}`;
+    } catch (err) {
+      if (err.code !== 'EEXIST') throw err;
+    }
+  }
 }
 
 // Latest submitted change per employee, shown as "scheduled change" in the UI.
@@ -235,13 +263,13 @@ function send(res, status, body, type = 'application/json; charset=utf-8') {
   res.end(type.startsWith('application/json') ? JSON.stringify(body) : body);
 }
 
-function readJsonBody(req) {
+function readJsonBody(req, maxBytes = MAX_BODY_BYTES) {
   return new Promise((resolve, reject) => {
     let size = 0;
     const chunks = [];
     req.on('data', (chunk) => {
       size += chunk.length;
-      if (size > MAX_BODY_BYTES) {
+      if (size > maxBytes) {
         reject(new ValidationError('Request body too large.'));
         req.destroy();
         return;
@@ -295,6 +323,17 @@ async function handle(req, res) {
       ...withSchedule(employee, changes),
       manager: manager ? { id: manager.id, name: `${manager.firstName} ${manager.lastName}`, phone: manager.phone } : null,
     });
+  }
+
+  if (req.method === 'POST' && pathname === '/api/recordings') {
+    const refused = refusePost(req);
+    if (refused) return send(res, refused[0], { error: refused[1] });
+    try {
+      return send(res, 201, { path: await writeRecording(await readJsonBody(req, MAX_RECORDING_BYTES)) });
+    } catch (err) {
+      if (err instanceof ValidationError) return send(res, 400, { error: err.message });
+      throw err;
+    }
   }
 
   if (req.method === 'POST' && (pathname === '/api/events' || pathname === '/api/submissions')) {

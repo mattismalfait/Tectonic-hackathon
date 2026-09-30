@@ -20,6 +20,12 @@ Add [recorder-ui.js](recorder-ui.js) after it to get a floating record button at
 <script src="recorder-ui.js"></script>
 ```
 
+To save finished recordings to a server, add `data-save-url` to the script tag. A finished recording then shows a **Save to input** bar (process + who); it posts `{ what, who, events }` to that URL. The portal does this and stores the recording as `input/<what>/<date>_<who>.json` for the [matcher](../matcher/):
+
+```html
+<script src="recorder-ui.js" data-save-url="/api/recordings"></script>
+```
+
 Press record to start and stop to end. The recording then opens as a chat: your actions on the right, the page's responses on the left, failures in red. Recordings are saved in `localStorage` (`tectonic.recordings`). The window lists all of them and can download one as JSONL. Clicks on the widget itself are not recorded.
 
 ## Options

@@ -1,12 +1,18 @@
 // Floating record button for recorder.js. Recordings are kept in localStorage.
 //   <script src="recorder.js"></script>
 //   <script src="recorder-ui.js"></script>
+// With data-save-url="/api/recordings" on the script tag, a finished recording can be saved to that URL
+// (POST { what, who, events } → { path }).
 (() => {
   const STORAGE_KEY = 'tectonic.recordings';
+  const SAVE_AS_KEY = 'tectonic.recorder.save-as'; // last used { what, who }
   const HOST_KEY = 'tectonic-recorder-ui'; // Clicks on the widget itself carry this key and are left out of recordings.
+  const SAVE_URL = document.currentScript?.dataset.saveUrl || null;
 
   const load = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } };
   const save = (list) => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (err) { console.warn('Recorder: could not save', err); } };
+  const loadSaveAs = () => { try { return JSON.parse(localStorage.getItem(SAVE_AS_KEY)) || {}; } catch { return {}; } };
+  const slug = (s) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
   const pad = (n) => String(n).padStart(2, '0');
   const clock = (ms) => `${Math.floor(ms / 60000)}:${pad(Math.floor(ms / 1000) % 60)}`;
@@ -119,7 +125,12 @@
         .item:hover { background: var(--soft); }
         .item span { display: block; color: var(--muted); font-size: 12px; }
         .empty { color: var(--muted); text-align: center; margin: auto; padding: 0 24px; }
-        .foot { padding: 8px 12px; border-top: 1px solid var(--line); text-align: right; }`);
+        .foot { padding: 8px 12px; border-top: 1px solid var(--line); text-align: right; }
+        .save { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); }
+        .save input { flex: 1 1 120px; min-width: 0; font: inherit; font-size: 12px; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+        .save .primary { background: var(--me); color: var(--me-fg); border-color: var(--me); }
+        .save .status { flex-basis: 100%; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+        .save .status.bad { background: none; }`);
     root.adoptedStyleSheets = [sheet];
     root.innerHTML = `
       <div class="dock">
@@ -131,6 +142,12 @@
             <button class="icon close" aria-label="Close" title="Close">\u2715</button>
           </header>
           <div class="body"></div>
+          <form class="save" hidden>
+            <input name="what" placeholder="Process, e.g. bank-account-change" aria-label="Process" required>
+            <input name="who" placeholder="Who, e.g. senior-officer" aria-label="Who" required>
+            <button class="small primary">Save to input</button>
+            <span class="status" role="status"></span>
+          </form>
           <div class="foot"><button class="small clear">Delete all</button></div>
         </section>
         <div class="timer" hidden>0:00</div>
@@ -141,7 +158,7 @@
       </div>`;
 
     const $ = (s) => root.querySelector(s);
-    const panel = $('.panel'), body = $('.body'), timer = $('.timer'), recBtn = $('.rec'), listBtn = $('.list-btn');
+    const panel = $('.panel'), body = $('.body'), timer = $('.timer'), recBtn = $('.rec'), listBtn = $('.list-btn'), saveForm = $('.save');
     let tick = null;
     let current = null; // recording shown in the panel
 
@@ -153,11 +170,48 @@
       $('.back').hidden = !back;
       $('.download').hidden = !download;
       $('.foot').hidden = !clear;
+      saveForm.hidden = !(download && SAVE_URL);
+    }
+
+    function showSaveStatus(r) {
+      const status = $('.save .status');
+      status.className = 'status';
+      status.textContent = r.savedTo ? `Saved to ${r.savedTo}` : '';
+    }
+
+    async function saveToServer(e) {
+      e.preventDefault();
+      const r = current;
+      const what = slug(saveForm.what.value), who = slug(saveForm.who.value);
+      const status = $('.save .status');
+      if (!what || !who) return;
+      saveForm.what.value = what;
+      saveForm.who.value = who;
+      try { localStorage.setItem(SAVE_AS_KEY, JSON.stringify({ what, who })); } catch { /* not remembered */ }
+      status.className = 'status';
+      status.textContent = 'Saving…';
+      try {
+        const res = await fetch(SAVE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ what, who, events: r.events }) });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(out.error || `HTTP ${res.status}`);
+        r.savedTo = out.path;
+        save(load().map((x) => (x.id === r.id ? { ...x, savedTo: out.path } : x)));
+        if (current === r) showSaveStatus(r);
+      } catch (err) {
+        status.className = 'status bad';
+        status.textContent = `Not saved: ${err.message}`;
+      }
     }
 
     function showRecording(r) {
       current = r;
       header(r.title || path(r.url), `${when(r.startedAt)} \u00b7 ${clock(r.ms)} \u00b7 ${r.events.length} events`, { back: true, download: true });
+      if (SAVE_URL) {
+        const last = loadSaveAs();
+        saveForm.what.value ||= last.what || '';
+        saveForm.who.value ||= last.who || '';
+        showSaveStatus(r);
+      }
       const t0 = Date.parse(r.startedAt);
       body.replaceChildren(...r.events.map((e) => {
         const kind = KIND[e.type] || 'user';
@@ -213,6 +267,7 @@
     listBtn.addEventListener('click', () => (panel.hidden ? showList() : (panel.hidden = true)));
     $('.back').addEventListener('click', showList);
     $('.close').addEventListener('click', () => { panel.hidden = true; });
+    saveForm.addEventListener('submit', saveToServer);
     $('.clear').addEventListener('click', () => { if (confirm('Delete all recordings in this browser?')) { save([]); showList(); } });
     $('.download').addEventListener('click', () => {
       const blob = new Blob([current.events.map((e) => JSON.stringify(e)).join('\n') + '\n'], { type: 'application/x-ndjson' });
