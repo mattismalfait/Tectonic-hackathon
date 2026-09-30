@@ -21,9 +21,9 @@ npm test         # scoring engine tests
 5. **Human in the loop:** a quality manager resolves a conflict → the decision becomes evidence and the scores update live.
 
 ## Data
-All data in `process/` is **synthetic** (fictional client, people and figures). No real or confidential data is used.
-- `process/bank-account-change`: an employee changes their salary bank account (7 steps, 20 sources, raw files in `raw/`), the main demo
-- `process/offboarding`: offboarding of a senior employee (8 steps, 19 sources)
+All data in `data/` is **synthetic** (fictional client, people and figures). No real or confidential data is used.
+- `data/bank-account-change`: an employee changes their salary bank account (7 steps, 20 sources, raw files in `raw/`), the main demo
+- `data/offboarding`: offboarding of a senior employee (8 steps, 19 sources)
 
 Product architecture: see [ARCHITECTURE.md](ARCHITECTURE.md).
 

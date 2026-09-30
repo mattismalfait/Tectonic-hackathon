@@ -1,12 +1,12 @@
 import type { Claim, Dataset, MasterSOP, Process, Source } from './engine'
-import bankProcess from '../../process/bank-account-change/process.json'
-import bankSources from '../../process/bank-account-change/sources.json'
-import bankClaims from '../../process/bank-account-change/claims.json'
-import bankMaster from '../../process/bank-account-change/master.json'
-import offProcess from '../../process/offboarding/process.json'
-import offSources from '../../process/offboarding/sources.json'
-import offClaims from '../../process/offboarding/claims.json'
-import offMaster from '../../process/offboarding/master.json'
+import bankProcess from '../../data/bank-account-change/process.json'
+import bankSources from '../../data/bank-account-change/sources.json'
+import bankClaims from '../../data/bank-account-change/claims.json'
+import bankMaster from '../../data/bank-account-change/master.json'
+import offProcess from '../../data/offboarding/process.json'
+import offSources from '../../data/offboarding/sources.json'
+import offClaims from '../../data/offboarding/claims.json'
+import offMaster from '../../data/offboarding/master.json'
 
 export const DATASETS: Dataset[] = [
   {

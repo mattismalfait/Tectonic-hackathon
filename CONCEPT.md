@@ -14,8 +14,8 @@ A **quality management dashboard** that shows, **per process and per step**, how
 - No black box: **the AI only extracts claims, a simple formula computes the score, a human decides on conflicts.**
 
 ## 3. Demo process
-**Main demo: "A client's employee changes bank account"** (easy to follow; data lives in `process/bank-account-change`).
-Second process (data in `process/offboarding`): **"Offboarding of a senior employee"**, client *Lumina Retail NV* (fictional), Belgium, joint committee PC 311. Senior with 18 years of seniority resigns.
+**Main demo: "A client's employee changes bank account"** (easy to follow; data lives in `data/bank-account-change`).
+Second process (data in `data/offboarding`): **"Offboarding of a senior employee"**, client *Lumina Retail NV* (fictional), Belgium, joint committee PC 311. Senior with 18 years of seniority resigns.
 8 steps: register the exit, notice period, non-compete clause, final pay (holiday pay on departure + year-end bonus), company car, group insurance, Dimona OUT + C4, knowledge handover.
 Each step triggers a different trust pattern: green agreement, an old chat vs. a new doc, a doc vs. SAP, practice that is never documented, a stale source, a gap.
 

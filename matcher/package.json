@@ -1,0 +1,7 @@
+{
+  "name": "@tectonic/matcher",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Checks raw evidence (recordings, transcripts) against a master SOP: did each step happen?",
+  "type": "module"
+}

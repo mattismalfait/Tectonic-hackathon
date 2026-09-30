@@ -17,7 +17,7 @@
 
 | # | Layer | What it does | Production choice | In the PoC |
 |---|---|---|---|---|
-| 1 | **Connect** | Incremental sync of docs, app config, chats, mail and people capture, **including permissions (ACLs)** | Graph API (SharePoint, Teams, Outlook), Confluence REST, SAP SuccessFactors OData (workflows, business rules, audit log), Slack Events API, StarGaze (consented) | Exported files in `process/*/raw/` |
+| 1 | **Connect** | Incremental sync of docs, app config, chats, mail and people capture, **including permissions (ACLs)** | Graph API (SharePoint, Teams, Outlook), Confluence REST, SAP SuccessFactors OData (workflows, business rules, audit log), Slack Events API, StarGaze (consented) | Exported files in `data/*/raw/` |
 | 2 | **Normalise** | One source record: text + the metadata the signals need (owner, owner status via HR, approval status, modified/review dates, country, client). **Copies are detected automatically** (near-duplicate hashing / embeddings), not tagged by hand | Postgres + object storage; HR directory lookup for owner status | `sources.json` |
 | 3 | **Extract** | Match source chunks to process steps (embedding search), LLM returns `{step, value, statement, quote}` as structured output, reject any claim whose quote is not a verbatim substring, cluster equivalent values per step | Gemini on Vertex AI (EU region) or Claude; no training on customer data | Pre-computed `claims.json`; tests enforce the verbatim-quote rule |
 | 4 | **Score** | The engine in `app/src/engine.ts`: signals → weight → agreement × strength → caps → process score → actions. Event-driven: recompute when a source or decision changes | Same TypeScript module as a service | Runs live in the browser |
