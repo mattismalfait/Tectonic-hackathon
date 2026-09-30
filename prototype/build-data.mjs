@@ -6,7 +6,7 @@
 //   node prototype/build-data.mjs                      -> bank-account-change
 //   node prototype/build-data.mjs offboarding          -> any folder in data/ (or process/)
 import { readFileSync, readdirSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
-import { dirname, join, relative } from 'node:path'
+import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -14,19 +14,32 @@ const root = join(here, '..')
 const names = process.argv.slice(2)
 const SOURCE_FIELDS = ['id', 'title', 'type', 'system', 'author_role', 'owner_status', 'approval_status', 'date', 'country', 'client_specific', 'origin', 'last_reviewed']
 
+// Only plain folder/file names, and the resolved path must stay inside its base folder (no path traversal).
+const SAFE_NAME = /^[A-Za-z0-9._-]+$/
+function inside(base, ...parts) {
+  if (!parts.every((p) => SAFE_NAME.test(p) && !p.startsWith('.'))) throw new Error(`Invalid name: ${parts.join('/')}`)
+  const full = resolve(base, ...parts)
+  if (!full.startsWith(resolve(base) + sep)) throw new Error(`Path outside ${base}: ${parts.join('/')}`)
+  return full
+}
+
 for (const name of names.length ? names : ['bank-account-change']) {
-  const dir = ['data', 'process'].map((d) => join(root, d, name)).find((d) => existsSync(d))
+  if (!SAFE_NAME.test(name) || name.startsWith('.')) {
+    console.error(`Invalid process name: ${name}`)
+    process.exit(1)
+  }
+  const dir = ['data', 'process'].map((d) => inside(join(root, d), name)).find((d) => existsSync(d))
   if (!dir) {
     console.error(`No folder data/${name} or process/${name}`)
     process.exit(1)
   }
-  const read = (file) => JSON.parse(readFileSync(join(dir, file), 'utf8').replace(/^﻿/, ''))
+  const read = (...parts) => JSON.parse(readFileSync(inside(dir, ...parts), 'utf8').replace(/^﻿/, ''))
   const proc = read('process.json')
   const sources = read('sources.json')
   const claims = read('claims.json')
-  const master = existsSync(join(dir, 'master.json')) ? read('master.json') : null
-  const sopDir = join(dir, 'sops')
-  const sops = existsSync(sopDir) ? readdirSync(sopDir).filter((f) => f.endsWith('.json')).map((f) => read(join('sops', f))) : []
+  const master = existsSync(inside(dir, 'master.json')) ? read('master.json') : null
+  const sopDir = inside(dir, 'sops')
+  const sops = existsSync(sopDir) ? readdirSync(sopDir).filter((f) => SAFE_NAME.test(f) && f.endsWith('.json')).map((f) => read('sops', f)) : []
 
   const out = {
     process: {

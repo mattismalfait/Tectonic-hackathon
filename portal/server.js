@@ -70,7 +70,7 @@ async function readSubmissions() {
     throw err;
   }
   const submissions = [];
-  for (const name of names.filter((n) => n.endsWith('.json'))) {
+  for (const name of names.filter((n) => /^[A-Za-z0-9._-]+\.json$/.test(n) && !n.startsWith('.'))) {
     try {
       submissions.push(JSON.parse(await fs.readFile(safeJoin(SUBMISSIONS_DIR, name), 'utf8')));
     } catch {

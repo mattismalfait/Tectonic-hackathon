@@ -1,3 +1,19 @@
+﻿// All HTML goes through safeHTML: parsed in an inert document, stripped of scripts, event-handler
+// attributes and javascript: URLs, then inserted as nodes. Never assign innerHTML directly.
+const BLOCKED_TAGS = 'script,iframe,object,embed,link,meta,base,frame,frameset'
+Object.defineProperty(Element.prototype, 'safeHTML', {
+  set(html) {
+    const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html')
+    doc.body.querySelectorAll(BLOCKED_TAGS).forEach(n => n.remove())
+    doc.body.querySelectorAll('*').forEach(el => {
+      for (const a of [...el.attributes]) {
+        const v = a.value.trim().toLowerCase()
+        if (a.name.startsWith('on') || ((a.name === 'href' || a.name === 'src' || a.name === 'xlink:href') && v.startsWith('javascript:'))) el.removeAttribute(a.name)
+      }
+    })
+    this.replaceChildren(...doc.body.childNodes)
+  },
+})
 /* ourSDbrain prototype: screens, navigation and interactions. Needs content.js, data/*.js and engine.js first. */
 
 /* ---------- helpers ---------- */
@@ -18,7 +34,7 @@ function ring(p, band, size = 26, stroke = 4) {
 }
 const bandLabel = r => r.res ? 'Decided' : r.band === 'gap' ? 'Knowledge gap' : r.contested ? 'Needs a human' : r.band === 'green' ? 'Trusted' : r.band === 'amber' ? 'Check' : 'Needs a human';
 const srcName = s => s.type === 'chat' ? s.title.replace(/\s*\(\d{4}-\d\d-\d\d\)/, '') : s.title.replace(/:.*$/, '').replace('StarGaze screen recording', 'StarGaze recording');
-const srcMeta = s => [s.system, fmt(s.date), s.approval_status === 'approved' ? 'approved' : null, s.owner_status === 'left' ? 'owner left' : s.owner_status === 'moved' ? 'owner moved' : null].filter(Boolean).join(' · ');
+const srcMeta = s => [s.system, fmt(s.date), s.approval_status === 'approved' ? 'approved' : null, s.owner_status === 'left' ? 'owner left' : s.owner_status === 'moved' ? 'owner moved' : null].filter(Boolean).join(' Â· ');
 function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2800); }
 
 /* reference per step = the master SOP's value, or the QM decision */
@@ -59,21 +75,21 @@ function renderHome() {
   $('#kProcs').textContent = total;
   $('#kReady').textContent = (p.status === 'Not release-ready' ? 0 : 1) + OTHER_PROCEDURES.filter(o => o.status !== 'Not release-ready').length + ' of ' + total;
   const items = [
-    ...open.map(r => ({ go: '#/procedure/' + r.step.id, band: 'red', t: 'Decide: ' + stepQuestion(r), m: `${DATA.process.name} · step ${r.step.order} · ${r.step.step_owner_role}`, score: r.score, isNew: r.step.id === 'step-4' })),
+    ...open.map(r => ({ go: '#/procedure/' + r.step.id, band: 'red', t: 'Decide: ' + stepQuestion(r), m: `${DATA.process.name} Â· step ${r.step.order} Â· ${r.step.step_owner_role}`, score: r.score, isNew: r.step.id === 'step-4' })),
     ...OTHER_PROCEDURES.flatMap(o => o.attention.map(a => ({ demo: 1, band: a.score >= .75 ? 'green' : a.score >= .5 ? 'amber' : 'red', ...a }))),
-    ...p.steps.filter(r => r.band === 'amber' && !r.contested).map(r => ({ go: '#/procedure/' + r.step.id, band: 'amber', t: 'Check: ' + r.step.name.toLowerCase(), m: `${DATA.process.name} · step ${r.step.order}`, score: r.score })),
+    ...p.steps.filter(r => r.band === 'amber' && !r.contested).map(r => ({ go: '#/procedure/' + r.step.id, band: 'amber', t: 'Check: ' + r.step.name.toLowerCase(), m: `${DATA.process.name} Â· step ${r.step.order}`, score: r.score })),
   ].sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
-  $('#attention').innerHTML = items.map(i => `
+  $('#attention').safeHTML = items.map(i => `
     <div class="item" ${i.go ? `data-go="${i.go}"` : 'data-demo="1"'} id="${i.isNew ? 'newItem' : ''}">
       <div><div class="t">${esc(i.t)}${i.isNew ? '<span class="new">NEW</span>' : ''}</div><div class="m">${esc(i.m)}</div></div>
       <span class="trust">${ring(i.score, i.band)}<b style="color:${TXT[i.band]}">${pct(i.score)}</b></span>
       <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(-90deg)"><path d="M3 6l5 5 5-5"/></svg>
     </div>`).join('') || '<div class="note">Nothing needs you right now.</div>';
   const band = p.status === 'Trusted' ? 'green' : p.status === 'Needs attention' ? 'amber' : 'red';
-  $('#procList').innerHTML = `
-    <div class="proc" data-go="#/procedure"><div class="top"><div><div class="t">${esc(DATA.process.name)}</div><div class="m">${p.status} · ${open.length} decision${open.length === 1 ? '' : 's'} open</div></div><strong style="color:${TXT[band]}">${pct(p.score)}</strong></div><div class="bar"><i style="width:${p.score * 100}%;background:${COL[band]}"></i></div></div>
+  $('#procList').safeHTML = `
+    <div class="proc" data-go="#/procedure"><div class="top"><div><div class="t">${esc(DATA.process.name)}</div><div class="m">${p.status} Â· ${open.length} decision${open.length === 1 ? '' : 's'} open</div></div><strong style="color:${TXT[band]}">${pct(p.score)}</strong></div><div class="bar"><i style="width:${p.score * 100}%;background:${COL[band]}"></i></div></div>
   ` + OTHER_PROCEDURES.map(o => { const b = o.score >= .75 ? 'green' : o.score >= .5 ? 'amber' : 'red'; return `
-    <div class="proc" data-demo="1"><div class="top"><div><div class="t">${esc(o.name)}</div><div class="m">${o.status} · ${o.decisions} decision${o.decisions === 1 ? '' : 's'} open</div></div><strong style="color:${TXT[b]}">${pct(o.score)}</strong></div><div class="bar"><i style="width:${o.score * 100}%;background:${COL[b]}"></i></div></div>`; }).join('');
+    <div class="proc" data-demo="1"><div class="top"><div><div class="t">${esc(o.name)}</div><div class="m">${o.status} Â· ${o.decisions} decision${o.decisions === 1 ? '' : 's'} open</div></div><strong style="color:${TXT[b]}">${pct(o.score)}</strong></div><div class="bar"><i style="width:${o.score * 100}%;background:${COL[b]}"></i></div></div>`; }).join('');
   if (!alertShown) { alertShown = true; setTimeout(() => current === 'home' && playAlert(), 1100); }
 }
 function stepQuestion(r) {
@@ -88,19 +104,19 @@ let openStep = 'step-4';
 function renderPicker(p, band) {
   const OTHER_PROCEDURES = otherProcedures();
   $('#picker .pn').textContent = DATA.process.name;
-  $('#ctxline').innerHTML = `<span>Client: ${esc(DATA.process.client.name)}</span><span>${esc({ BE: 'Belgium', NL: 'Netherlands' }[DATA.process.client.country] || DATA.process.client.country)}${DATA.process.client.joint_committee ? ' · PC ' + esc(DATA.process.client.joint_committee) : ''}</span>` + (MASTER ? `<span>Master SOP v${esc(MASTER.version)} · ${esc(MASTER.owner_role)} · ${fmt(MASTER.date)}</span>` : '');
+  $('#ctxline').safeHTML = `<span>Client: ${esc(DATA.process.client.name)}</span><span>${esc({ BE: 'Belgium', NL: 'Netherlands' }[DATA.process.client.country] || DATA.process.client.country)}${DATA.process.client.joint_committee ? ' Â· PC ' + esc(DATA.process.client.joint_committee) : ''}</span>` + (MASTER ? `<span>Master SOP v${esc(MASTER.version)} Â· ${esc(MASTER.owner_role)} Â· ${fmt(MASTER.date)}</span>` : '');
   const opts = [{ name: DATA.process.name, steps: DATA.process.steps.length, sources: DATA.sources.length, score: p.score, band, cur: true }]
     .concat(OTHER_PROCEDURES.map(o => ({ ...o, band: o.score >= .75 ? 'green' : o.score >= .5 ? 'amber' : 'red' })));
-  $('#options').innerHTML = opts.map(o => `<div class="opt ${o.cur ? 'cur' : ''}" data-name="${esc(o.name.toLowerCase())}" ${o.cur ? '' : 'data-demo="1"'}><div><div class="on">${esc(o.name)}</div><div class="om">${o.steps} steps · ${o.sources} sources</div></div><span class="pill ${o.band}">${pct(o.score)}</span></div>`).join('');
+  $('#options').safeHTML = opts.map(o => `<div class="opt ${o.cur ? 'cur' : ''}" data-name="${esc(o.name.toLowerCase())}" ${o.cur ? '' : 'data-demo="1"'}><div><div class="on">${esc(o.name)}</div><div class="om">${o.steps} steps Â· ${o.sources} sources</div></div><span class="pill ${o.band}">${pct(o.score)}</span></div>`).join('');
 }
 function renderProcedure(arg) {
   if (arg) openStep = arg;
   const p = scoreProcess();
   const band = p.status === 'Trusted' ? 'green' : p.status === 'Needs attention' ? 'amber' : 'red';
-  $('#pRing').innerHTML = ring(p.score, band, 72, 9);
+  $('#pRing').safeHTML = ring(p.score, band, 72, 9);
   $('#pScore').textContent = pct(p.score); $('#pScore').style.color = TXT[band];
-  $('#pStatus').textContent = 'Procedure trust score · ' + p.status.toLowerCase();
-  $('#pickerPill').className = 'pill ' + band; $('#pickerPill').textContent = pct(p.score) + ' · ' + p.status.toLowerCase();
+  $('#pStatus').textContent = 'Procedure trust score Â· ' + p.status.toLowerCase();
+  $('#pickerPill').className = 'pill ' + band; $('#pickerPill').textContent = pct(p.score) + ' Â· ' + p.status.toLowerCase();
   renderPicker(p, band);
   $('#sDecide').textContent = p.steps.filter(r => r.contested && !r.res).length;
   $('#sCheck').textContent = p.steps.filter(r => r.band === 'amber' && !r.contested).length;
@@ -113,10 +129,10 @@ function renderProcedure(arg) {
     const counted = countedEv(r);
     const cells = TYPES.map(([t]) => {
       const es = counted.filter(e => e.s.type === t);
-      if (!es.length) return '<span class="dot none" title="No source">–</span>';
+      if (!es.length) return '<span class="dot none" title="No source">â€“</span>';
       const same = es.filter(e => e.status === 'supports').length;
       const k = same === es.length ? 'same' : same === 0 ? 'diff' : 'mixed';
-      return `<span class="dot ${k}" title="${same} confirm the master, ${es.length - same} differ">${k === 'same' ? '✓' : k === 'diff' ? '✕' : ''}</span>`;
+      return `<span class="dot ${k}" title="${same} confirm the master, ${es.length - same} differ">${k === 'same' ? 'âœ“' : k === 'diff' ? 'âœ•' : ''}</span>`;
     });
     const b = r.res ? 'green' : r.band;
     const dev = !r.res && (r.band !== 'green');
@@ -129,7 +145,7 @@ function renderProcedure(arg) {
       <div class="cell c"><svg class="chev" viewBox="0 0 16 16" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l5 5 5-5"/></svg></div>
     </div>${detailHTML(r, ref)}`;
   }
-  $('#grid').innerHTML = html;
+  $('#grid').safeHTML = html;
   $('#grid').querySelectorAll('.srow').forEach(row => {
     row.querySelectorAll('.cell').forEach(c => c.addEventListener('click', () => {
       openStep = openStep === row.dataset.step ? null : row.dataset.step;
@@ -149,10 +165,10 @@ function detailHTML(r, ref) {
   const refEv = counted.filter(e => e.status === 'supports');
   const others = (r.groups || []).slice(1);
   const otherVals = others.map(g => g.value);
-  const li = es => es.map(e => `<li><span class="ty">${TYPE_LABEL[e.s.type]}</span><span>${esc(srcName(e.s))}</span><span class="me">${fmt(e.s.date)}${e.s.owner_status === 'left' ? ' · owner left' : e.s.owner_status === 'moved' ? ' · moved' : ''}</span></li>`).join('');
-  const refLabel = r.res ? 'Decided by the quality manager' : otherVals.length ? 'Master SOP says' : 'Master SOP · all sources confirm';
+  const li = es => es.map(e => `<li><span class="ty">${TYPE_LABEL[e.s.type]}</span><span>${esc(srcName(e.s))}</span><span class="me">${fmt(e.s.date)}${e.s.owner_status === 'left' ? ' Â· owner left' : e.s.owner_status === 'moved' ? ' Â· moved' : ''}</span></li>`).join('');
+  const refLabel = r.res ? 'Decided by the quality manager' : otherVals.length ? 'Master SOP says' : 'Master SOP Â· all sources confirm';
   let html = `<div class="detail"><div class="compare ${otherVals.length ? '' : 'one'}">
-    <div class="side"><div class="k">${refLabel}</div><div class="v">${esc(cap(ref || '–'))}</div><ul>${li(refEv)}</ul></div>
+    <div class="side"><div class="k">${refLabel}</div><div class="v">${esc(cap(ref || 'â€“'))}</div><ul>${li(refEv)}</ul></div>
     ${others.map(g => `<div class="side b"><div class="k">Differs from the master</div><div class="v">${esc(cap(g.value))}</div><ul>${li(g.ev)}</ul></div>`).join('')}
   </div>`;
   const ex = r.ev.filter(e => e.status === 'excluded' || e.status === 'overruled'), echoes = counted.filter(e => e.echo);
@@ -161,7 +177,7 @@ function detailHTML(r, ref) {
   const ctx = CONTEXT[r.step.id] || {};
   if (r.res) {
     const nx = ctx.next ? (ctx.next[r.res] || ctx.next['*']) : 'Next: update the sources that say otherwise.';
-    html += `<div class="done">✓ Decided: “${esc(cap(r.res))}”. ${esc(nx)}</div>`;
+    html += `<div class="done">âœ“ Decided: â€œ${esc(cap(r.res))}â€. ${esc(nx)}</div>`;
   } else if (r.contested) {
     const opts = r.groups.slice(0, 2).map(g => g.value);
     html += `<div class="todo"><p><small>What to do</small>${esc(ctx.todo || 'Sources differ from the master SOP. Decide which value is right: confirm the master or change it.')}</p>
@@ -170,7 +186,7 @@ function detailHTML(r, ref) {
   } else if (r.band === 'amber' || (ctx.todo && otherVals.length)) {
     html += `<div class="todo"><p><small>What to do</small>${esc(ctx.todo || (r.x && r.x.calculation.cap ? r.x.calculation.cap.reason : 'Some sources differ from the master: update or retire them.'))}</p><button class="btn white remind">Send reminder</button></div>`;
   }
-  html += `<div class="links"><a data-go="#/why/${r.step.id}">Why ${pct(r.score)}? See how this score is built →</a><a href="#" class="opensrc">Open the sources ↗</a></div></div>`;
+  html += `<div class="links"><a data-go="#/why/${r.step.id}">Why ${pct(r.score)}? See how this score is built â†’</a><a href="#" class="opensrc">Open the sources â†—</a></div></div>`;
   return html;
 }
 
@@ -201,31 +217,31 @@ function renderWhy(stepId) {
   const f2 = x => x.toFixed(2);
   const calc = r.x.calculation, capped = calc.cap;
   const sentence = r.res
-    ? `The quality manager decided “${r.res}”. That decision is now the reference for this step; sources that say otherwise are listed but no longer counted.`
+    ? `The quality manager decided â€œ${r.res}â€. That decision is now the reference for this step; sources that say otherwise are listed but no longer counted.`
     : r.x.headline;
-  const rule = capped ? { v: '≤ ' + pct(capped.value), p: capped.reason } : { v: 'None', p: 'Enough strong sources, and a doc or SAP covers the step.' };
-  const sigCell = (k, v) => k === 'recent' || (k === 'ownerActive' && v > 0 && v < 1) ? `<span class="part">${pct(v)}</span>` : v ? '<span class="yes">✓</span>' : '<span class="no">✕</span>';
+  const rule = capped ? { v: 'â‰¤ ' + pct(capped.value), p: capped.reason } : { v: 'None', p: 'Enough strong sources, and a doc or SAP covers the step.' };
+  const sigCell = (k, v) => k === 'recent' || (k === 'ownerActive' && v > 0 && v < 1) ? `<span class="part">${pct(v)}</span>` : v ? '<span class="yes">âœ“</span>' : '<span class="no">âœ•</span>';
   const off = e => e.status === 'excluded' || e.status === 'overruled';
   const evRow = e => `
-    <div class="src ${off(e) ? 'dim' : ''}"><div class="n">${TYPE_LABEL[e.s.type]} · ${esc(srcName(e.s))}</div><div class="m">${esc(srcMeta(e.s))}${e.echo ? ' · repeats ' + esc(srcName(e.echo)) + ', counts for half' : ''}${e.reason ? ' · ' + esc(e.reason) : ''}</div><q>${esc(e.c.quote)}</q></div>
+    <div class="src ${off(e) ? 'dim' : ''}"><div class="n">${TYPE_LABEL[e.s.type]} Â· ${esc(srcName(e.s))}</div><div class="m">${esc(srcMeta(e.s))}${e.echo ? ' Â· repeats ' + esc(srcName(e.echo)) + ', counts for half' : ''}${e.reason ? ' Â· ' + esc(e.reason) : ''}</div><q>${esc(e.c.quote)}</q></div>
     ${['designated', 'approved', 'recent', 'reviewed', 'ownerActive'].map(k => `<div class="sg ${off(e) ? 'dim' : ''}">${sigCell(k, e.g[k])}</div>`).join('')}
     <div class="wcell ${off(e) ? 'dim' : ''}"><div class="wbar"><b>${f2(e.eff)}</b><div class="bar"><i style="width:${e.eff * 100}%;background:${e.status === 'contradicts' ? COL.red : e.status === 'supports' ? COL.green : '#B9BCC0'}"></i></div></div></div>`;
   let rows = '';
   (r.groups || []).forEach((g, i) => {
-    rows += `<div class="grp ${i === 0 ? 'lead' : 'other'}">${i === 0 ? (r.res ? '✓ Decided' : '✓ Confirms the master') : '✕ Differs'}: “${esc(cap(g.value))}” <span class="w">weight ${f2(g.weight)}</span></div>` + [...g.ev].sort((a, b) => b.eff - a.eff).map(evRow).join('');
+    rows += `<div class="grp ${i === 0 ? 'lead' : 'other'}">${i === 0 ? (r.res ? 'âœ“ Decided' : 'âœ“ Confirms the master') : 'âœ• Differs'}: â€œ${esc(cap(g.value))}â€ <span class="w">weight ${f2(g.weight)}</span></div>` + [...g.ev].sort((a, b) => b.eff - a.eff).map(evRow).join('');
   });
   const notCounted = r.ev.filter(off);
   if (notCounted.length) rows += `<div class="grp off">Not counted</div>` + notCounted.map(evRow).join('');
   const cats = Object.values(r.x.categories);
 
-  $('#whyPage').innerHTML = `
-    <button class="back" data-go="#/procedure/${step.id}">←  ${esc(DATA.process.name)}</button>
-    <div class="headrow">${ring(r.score, b, 84, 11)}<div><div class="muted" style="font-size:14px;font-weight:600">Step ${step.order} of ${DATA.process.steps.length} · why this score</div><h1 style="margin-top:4px">${esc(step.name)}: ${pct(r.score)}</h1><span class="pill ${b}">${bandLabel(r)}</span></div></div>
+  $('#whyPage').safeHTML = `
+    <button class="back" data-go="#/procedure/${step.id}">â†  ${esc(DATA.process.name)}</button>
+    <div class="headrow">${ring(r.score, b, 84, 11)}<div><div class="muted" style="font-size:14px;font-weight:600">Step ${step.order} of ${DATA.process.steps.length} Â· why this score</div><h1 style="margin-top:4px">${esc(step.name)}: ${pct(r.score)}</h1><span class="pill ${b}">${bandLabel(r)}</span></div></div>
     <p class="lead">${esc(sentence)}</p>
-    <p class="muted" style="margin:0 0 18px">Master SOP: “${esc(r.x.master.value)}”${r.x.master.statement ? ' · ' + esc(r.x.master.statement) : ''}</p>
+    <p class="muted" style="margin:0 0 18px">Master SOP: â€œ${esc(r.x.master.value)}â€${r.x.master.statement ? ' Â· ' + esc(r.x.master.statement) : ''}</p>
     ${r.band === 'gap' ? '' : `<div class="calc">
-      <div class="box"><div class="k">Confirms the master</div><div class="v">${f2(calc.weightConfirming)}</div><p>Summed weight of the sources that say what the master says.</p></div><div class="op">÷</div>
-      <div class="box"><div class="k">All counted sources</div><div class="v">${f2(calc.weightTotal)}</div><p>Confirming ${f2(calc.weightConfirming)} + differing ${f2(calc.weightDiffering)}. A repeat counts for half.</p></div><div class="op">→</div>
+      <div class="box"><div class="k">Confirms the master</div><div class="v">${f2(calc.weightConfirming)}</div><p>Summed weight of the sources that say what the master says.</p></div><div class="op">Ã·</div>
+      <div class="box"><div class="k">All counted sources</div><div class="v">${f2(calc.weightTotal)}</div><p>Confirming ${f2(calc.weightConfirming)} + differing ${f2(calc.weightDiffering)}. A repeat counts for half.</p></div><div class="op">â†’</div>
       <div class="box"><div class="k">Rule applied</div><div class="v">${rule.v}</div><p>${esc(rule.p)} Conformance ${pct(calc.conformance)}.</p></div><div class="op">=</div>
       <div class="box final ${b}"><div class="k">Trust score</div><div class="v">${pct(r.score)}</div><p>${bandLabel(r)}. Bands: 75% trusted, 50% check.</p></div>
     </div>`}
@@ -233,31 +249,31 @@ function renderWhy(stepId) {
       <div class="card-h"><h2>Per source type, compared to the master</h2></div>
       <div class="rules">
         ${cats.map(c => `<div class="rule"><b>${esc(c.label)}</b><div>${esc(c.summary)}</div></div>`).join('')}
-        ${r.x.crossChecks.length ? `<div class="rule"><b>Cross-checks</b><div>${r.x.crossChecks.map(c => (c.match ? '✓ ' : '✕ ') + esc(c.sentence)).join('<br>')}</div></div>` : ''}
+        ${r.x.crossChecks.length ? `<div class="rule"><b>Cross-checks</b><div>${r.x.crossChecks.map(c => (c.match ? 'âœ“ ' : 'âœ• ') + esc(c.sentence)).join('<br>')}</div></div>` : ''}
       </div>
     </section>
     <section class="card evtable">
       <div class="card-h"><h2>Every source, and why it weighs what it weighs</h2><div class="muted">Five objective signals per source. Equal weights (20% each) unless the quality manager changes them in the <a data-go="#/model">score model</a>.</div></div>
-      <div class="ev"><div class="h">Source · what it says</div><div class="h">Designated</div><div class="h">Approved</div><div class="h">Recent</div><div class="h">Reviewed</div><div class="h">Owner active</div><div class="h">Weight</div>${rows}</div>
+      <div class="ev"><div class="h">Source Â· what it says</div><div class="h">Designated</div><div class="h">Approved</div><div class="h">Recent</div><div class="h">Reviewed</div><div class="h">Owner active</div><div class="h">Weight</div>${rows}</div>
     </section>
-    <div class="links" style="margin-top:20px"><a data-go="#/procedure/${step.id}">← Back to the step</a><a data-go="#/model">How does the scoring model work? →</a></div>`;
+    <div class="links" style="margin-top:20px"><a data-go="#/procedure/${step.id}">â† Back to the step</a><a data-go="#/model">How does the scoring model work? â†’</a></div>`;
 }
 
 /* ---------- score model ---------- */
 const SIGNALS = [
   ['designated', 'Designated source', 'Is it <em>the</em> registered source for this step: a controlled document, the system of record, or the person responsible for the step?'],
   ['approved', 'Formally approved', 'Does it have a formal approval status?'],
-  ['recent', 'Recent', 'Loses value over 36 months: <em>1 − months since last change ÷ 36</em>.'],
+  ['recent', 'Recent', 'Loses value over 36 months: <em>1 âˆ’ months since last change Ã· 36</em>.'],
   ['reviewed', 'Reviewed', 'Reviewed or verified in the last 12 months?'],
   ['ownerActive', 'Owner active', 'Is the owner still employed and in this role? Moved counts as half.'],
 ];
 function renderModel() {
   const tot = Object.values(W).reduce((a, b) => a + b, 0) || 1;
-  $('#sigRows').innerHTML = SIGNALS.map(([k, n, d]) => `<div class="sigrow"><div><div class="n">${n}</div><div class="d">${d}</div></div><input type="range" min="0" max="3" step="1" value="${W[k]}" data-k="${k}" aria-label="Weight of ${n}"><span class="pct">${Math.round(W[k] / tot * 100)}%</span></div>`).join('');
+  $('#sigRows').safeHTML = SIGNALS.map(([k, n, d]) => `<div class="sigrow"><div><div class="n">${n}</div><div class="d">${d}</div></div><input type="range" min="0" max="3" step="1" value="${W[k]}" data-k="${k}" aria-label="Weight of ${n}"><span class="pct">${Math.round(W[k] / tot * 100)}%</span></div>`).join('');
   $('#sigRows').querySelectorAll('input').forEach(i => i.addEventListener('input', () => { W[i.dataset.k] = +i.value; renderModel(); }));
   const p = scoreProcess();
   const band = p.status === 'Trusted' ? 'green' : p.status === 'Needs attention' ? 'amber' : 'red';
-  $('#live').innerHTML = `<div style="display:flex;align-items:center;gap:14px;margin-bottom:10px">${ring(p.score, band, 64, 8)}<div><div style="font-size:28px;font-weight:600;color:${TXT[band]}">${pct(p.score)}</div><div class="muted">${p.status}</div></div></div>` +
+  $('#live').safeHTML = `<div style="display:flex;align-items:center;gap:14px;margin-bottom:10px">${ring(p.score, band, 64, 8)}<div><div style="font-size:28px;font-weight:600;color:${TXT[band]}">${pct(p.score)}</div><div class="muted">${p.status}</div></div></div>` +
     p.steps.map(r => { const b = r.res ? 'green' : r.band; return `<div class="row"><span>${r.step.order}. ${esc(r.step.name)}</span><div class="bar"><i style="width:${r.score * 100}%;background:${COL[b]}"></i></div><b style="color:${TXT[b]};text-align:right">${pct(r.score)}</b></div>`; }).join('');
 }
 $('#resetW').addEventListener('click', () => { W = { ...DEFAULT_W }; renderModel(); });
@@ -293,3 +309,4 @@ $('#bell').addEventListener('click', () => { if (current !== 'home') go('#/home'
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAlert(); picker.classList.remove('open'); } });
 
 render();
+
