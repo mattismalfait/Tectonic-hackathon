@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DATASETS } from '../data'
-import { scoreProcess } from './index'
+import { scoreProcess, sopsToDataset, type SOP } from './index'
 
 const TODAY = new Date('2026-09-30')
 
@@ -40,6 +40,36 @@ describe('scoring engine', () => {
     const step2 = r.steps.find((s) => s.step.id === 'step-2')!
     const step4 = r.steps.find((s) => s.step.id === 'step-4')!
     expect(step2.score).toBeGreaterThan(step4.score)
+  })
+
+  it("accepts Gilles's SOP format", () => {
+    const data = DATASETS[0]
+    const master: SOP = {
+      id: data.process.id,
+      name: data.process.name,
+      steps: data.process.steps.map((s) => ({ id: s.id, name: s.name, description: data.master!.steps.find((m) => m.step_id === s.id)!.statement })),
+    }
+    const sops: SOP[] = [
+      {
+        id: data.process.id,
+        name: data.process.name,
+        source_id: 'src-01',
+        steps: [{ id: 'step-3', name: "Verify the employee's identity", description: 'Call the employee back on the number on file.', matches_master: true }],
+      },
+      {
+        id: data.process.id,
+        name: data.process.name,
+        source_id: 'src-02',
+        // no id match, matched on name; no verdict, so word overlap decides
+        steps: [{ id: 'x-9', name: "Verify the employee's identity", description: 'Check that the email came from the employee address.' }],
+      },
+    ]
+    const ds = sopsToDataset(data.process, master, sops, data.sources)
+    expect(ds.claims).toHaveLength(2)
+    expect(ds.claims[1].step_id).toBe('step-3')
+    expect(ds.claims[1].matches_master).toBe(false)
+    const step3 = scoreProcess(ds, undefined, TODAY).steps.find((s) => s.step.id === 'step-3')!
+    expect(step3.explanation!.categories.docs.status).toBe('mixed')
   })
 
   it('without a master the engine falls back to consensus scoring', () => {
