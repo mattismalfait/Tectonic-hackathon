@@ -2,6 +2,13 @@
   "name": "@tectonic/matcher",
   "version": "0.1.0",
   "private": true,
-  "description": "Checks raw evidence (recordings, transcripts) against a master SOP: did each step happen?",
-  "type": "module"
+  "description": "Checks a raw source (recording, transcript, notes) against a master SOP: did each step happen?",
+  "type": "module",
+  "main": "src/matcher.js",
+  "bin": {
+    "matcher": "src/cli.js"
+  },
+  "scripts": {
+    "demo": "node src/cli.js --sop ../master/bank-account-change/2026-02-16_sd-worx-payroll.json --source ../input/bank-account-change/2026-09-30_senior-officer.json"
+  }
 }

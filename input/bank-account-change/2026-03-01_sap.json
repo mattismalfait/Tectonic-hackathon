@@ -1,0 +1,3 @@
+{
+  "text": "Workflow ID: PAYINFO_CHG_LUM | Company: Lumina Retail NV (BE, PC 311) | Status: active since 2026-03-01\nTrigger: change of Payment Information (bank account) via the ESS portal MyPayslip, or manual entry by an SD Worx payroll consultant.\nValidation: IBAN check digits and account holder name must match the employee record (hard stop).\nApproval: a bank account change is released to payroll only after approval by a second SD Worx payroll consultant (four-eyes). Rule active since 2025-06-02.\nCall-back: field 'Call-back done (Y/N)' on the change form, optional.\nAudit: every change is logged with channel (ESS / MANUAL), user and timestamp."
+}

@@ -1,0 +1,292 @@
+[
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 0,
+    "time": "2026-09-30T09:41:37.502Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "start",
+    "url": "http://127.0.0.1:3000/#/employees",
+    "target": null,
+    "data": {
+      "title": "Payroll Workspace",
+      "referrer": "",
+      "language": "en-BE",
+      "viewport": "1440x900"
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 1,
+    "time": "2026-09-30T09:41:38.502Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "page_view",
+    "url": "http://127.0.0.1:3000/#/employees",
+    "target": null,
+    "data": {
+      "title": "Payroll Workspace",
+      "from": null
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 2,
+    "time": "2026-09-30T09:41:42.502Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "click",
+    "url": "http://127.0.0.1:3000/#/employees",
+    "target": {
+      "key": "employee-row",
+      "tag": "tr",
+      "type": null,
+      "text": "Youssef El Amrani",
+      "path": "table > tbody > tr"
+    },
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 3,
+    "time": "2026-09-30T09:41:42.702Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "page_view",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": null,
+    "data": {
+      "title": "Youssef El Amrani",
+      "from": "http://127.0.0.1:3000/#/employees"
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 4,
+    "time": "2026-09-30T09:41:42.802Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "request",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": null,
+    "data": {
+      "method": "GET",
+      "url": "http://127.0.0.1:3000/api/employees/E-10517",
+      "status": 200,
+      "ms": 41
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 5,
+    "time": "2026-09-30T09:41:47.802Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "click",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": {
+      "key": "edit-iban",
+      "tag": "button",
+      "type": "button",
+      "text": "Edit IBAN",
+      "path": "main > section > button"
+    },
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 6,
+    "time": "2026-09-30T09:41:47.902Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "dialog_open",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": null,
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 7,
+    "time": "2026-09-30T09:41:48.902Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "focus",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": {
+      "key": "new-iban",
+      "tag": "input",
+      "type": "text",
+      "text": "New IBAN",
+      "path": "dialog > form > label > input"
+    },
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 8,
+    "time": "2026-09-30T09:41:56.902Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "change",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": {
+      "key": "new-iban",
+      "tag": "input",
+      "type": "text",
+      "text": "New IBAN",
+      "path": "dialog > form > label > input"
+    },
+    "data": {
+      "value": "BE62 •••• •••• 4412",
+      "filled": true,
+      "length": 16
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 9,
+    "time": "2026-09-30T09:41:57.102Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "blur",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": {
+      "key": "new-iban",
+      "tag": "input",
+      "type": "text",
+      "text": "New IBAN",
+      "path": "dialog > form > label > input"
+    },
+    "data": {
+      "ms": 8200
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 10,
+    "time": "2026-09-30T09:42:00.102Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "click",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": {
+      "key": "dialog-submit",
+      "tag": "button",
+      "type": "submit",
+      "text": "Submit change",
+      "path": "dialog > form > button"
+    },
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 11,
+    "time": "2026-09-30T09:42:00.102Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "submit",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": null,
+    "data": {
+      "fields": [
+        {
+          "key": "new-iban",
+          "filled": true
+        },
+        {
+          "key": "first-pay-date",
+          "filled": false
+        },
+        {
+          "key": "proof-file",
+          "filled": false
+        }
+      ]
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 12,
+    "time": "2026-09-30T09:42:00.302Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "request",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": null,
+    "data": {
+      "method": "POST",
+      "url": "http://127.0.0.1:3000/api/submissions",
+      "status": 201,
+      "ms": 59
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 13,
+    "time": "2026-09-30T09:42:00.402Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "dialog_close",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": null,
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "8a2e6d14-0f3b-4b9a-a7c5-61e9d0f4b702",
+    "seq": 14,
+    "time": "2026-09-30T09:42:03.402Z",
+    "actor": {
+      "id": "tom",
+      "role": "junior"
+    },
+    "type": "stop",
+    "url": "http://127.0.0.1:3000/#/employees/E-10517",
+    "target": null,
+    "data": {
+      "ms": 26100
+    }
+  }
+]

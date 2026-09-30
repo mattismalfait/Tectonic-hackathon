@@ -8,4 +8,11 @@ matcher --sop data/bank-account-change/process.json --source recording.jsonl
 
 Inputs: an SOP (`process.json`: steps with `id`, `name`, `description`) and one source: a recorder JSONL file (`tectonic.recorder/v1`, `tectonic.ui-event/v1`) or a Markdown / text file.
 
-Status: design only. See [ARCHITECTURE.md](ARCHITECTURE.md).
+Runs on the local Claude subscription through the Claude Code CLI (`claude` must be installed and logged in). No API key.
+
+```
+node matcher/src/cli.js --sop <process.json> --source <raw file> [--out result.json] [--model sonnet]
+npm run demo -w matcher
+```
+
+Without `--out` the result is printed as JSON. See [ARCHITECTURE.md](ARCHITECTURE.md).

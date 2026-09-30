@@ -1,0 +1,81 @@
+{
+  "id": "proc-bank-account-change",
+  "name": "Change of salary bank account (IBAN)",
+  "client": {
+    "id": "cli-lumina",
+    "name": "Lumina Retail NV",
+    "country": "BE",
+    "joint_committee": "311"
+  },
+  "case": {
+    "employee": "Lumina store employee (fictional)",
+    "request": "Employee changes the bank account the salary is paid into",
+    "requested_on": "2026-09-10"
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "order": 1,
+      "name": "Receive the request",
+      "criticality": 2,
+      "description": "The employee's request for a new salary bank account reaches the payroll consultant through the agreed channel.",
+      "step_owner_role": "SD Worx payroll consultant",
+      "match": true
+    },
+    {
+      "id": "step-2",
+      "order": 2,
+      "name": "Check the IBAN",
+      "criticality": 2,
+      "description": "Check that the IBAN is valid and that the account holder is the employee.",
+      "step_owner_role": "SD Worx payroll consultant",
+      "match": false
+    },
+    {
+      "id": "step-3",
+      "order": 3,
+      "name": "Verify the employee's identity",
+      "criticality": 3,
+      "description": "Make sure the request really comes from the employee (fraud control: payroll diversion).",
+      "step_owner_role": "SD Worx payroll consultant",
+      "match": false
+    },
+    {
+      "id": "step-4",
+      "order": 4,
+      "name": "Enter and release the change in SAP",
+      "criticality": 3,
+      "description": "Enter the new IBAN in SAP and release it for payroll.",
+      "step_owner_role": "SD Worx payroll consultant",
+      "match": false
+    },
+    {
+      "id": "step-5",
+      "order": 5,
+      "name": "Apply the payroll cut-off",
+      "criticality": 2,
+      "description": "Decide from which monthly payroll run the new IBAN applies.",
+      "step_owner_role": "SD Worx payroll consultant",
+      "match": false
+    },
+    {
+      "id": "step-6",
+      "order": 6,
+      "name": "Confirm to the employee",
+      "criticality": 1,
+      "description": "Tell the employee the change is done and from when it applies.",
+      "step_owner_role": "SD Worx payroll consultant",
+      "match": false
+    },
+    {
+      "id": "step-7",
+      "order": 7,
+      "name": "File the request",
+      "criticality": 1,
+      "description": "Keep the request and the checks as evidence.",
+      "step_owner_role": "SD Worx payroll consultant",
+      "match": false
+    }
+  ],
+  "source": "input/bank-account-change/2026-08-21_lumina-hr.json"
+}

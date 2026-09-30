@@ -1,0 +1,383 @@
+[
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 0,
+    "time": "2026-09-30T08:14:02.110Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "start",
+    "url": "http://127.0.0.1:3000/#/employees",
+    "target": null,
+    "data": {
+      "title": "Payroll Workspace",
+      "referrer": "",
+      "language": "en-BE",
+      "viewport": "1440x900"
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 1,
+    "time": "2026-09-30T08:14:03.110Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "page_view",
+    "url": "http://127.0.0.1:3000/#/employees",
+    "target": null,
+    "data": {
+      "title": "Payroll Workspace",
+      "from": null
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 2,
+    "time": "2026-09-30T08:14:09.110Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "click",
+    "url": "http://127.0.0.1:3000/#/employees",
+    "target": {
+      "key": "employee-row",
+      "tag": "tr",
+      "type": null,
+      "text": "Jan Peeters",
+      "path": "table > tbody > tr"
+    },
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 3,
+    "time": "2026-09-30T08:14:09.310Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "page_view",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": null,
+    "data": {
+      "title": "Jan Peeters",
+      "from": "http://127.0.0.1:3000/#/employees"
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 4,
+    "time": "2026-09-30T08:14:09.410Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "request",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": null,
+    "data": {
+      "method": "GET",
+      "url": "http://127.0.0.1:3000/api/employees/E-10432",
+      "status": 200,
+      "ms": 38
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 5,
+    "time": "2026-09-30T08:14:23.410Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "click",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": {
+      "key": "call-employee",
+      "tag": "button",
+      "type": "button",
+      "text": "Call employee",
+      "path": "main > section > button"
+    },
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 6,
+    "time": "2026-09-30T08:15:59.410Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "click",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": {
+      "key": "payroll-calendar",
+      "tag": "button",
+      "type": "button",
+      "text": "Payroll calendar",
+      "path": "header > nav > button"
+    },
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 7,
+    "time": "2026-09-30T08:16:08.410Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "click",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": {
+      "key": "edit-iban",
+      "tag": "button",
+      "type": "button",
+      "text": "Edit IBAN",
+      "path": "main > section > button"
+    },
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 8,
+    "time": "2026-09-30T08:16:08.510Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "dialog_open",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": null,
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 9,
+    "time": "2026-09-30T08:16:10.510Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "focus",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": {
+      "key": "new-iban",
+      "tag": "input",
+      "type": "text",
+      "text": "New IBAN",
+      "path": "dialog > form > label > input"
+    },
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 10,
+    "time": "2026-09-30T08:16:21.510Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "change",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": {
+      "key": "new-iban",
+      "tag": "input",
+      "type": "text",
+      "text": "New IBAN",
+      "path": "dialog > form > label > input"
+    },
+    "data": {
+      "value": "BE71 •••• •••• 0369",
+      "filled": true,
+      "length": 16
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 11,
+    "time": "2026-09-30T08:16:21.810Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "blur",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": {
+      "key": "new-iban",
+      "tag": "input",
+      "type": "text",
+      "text": "New IBAN",
+      "path": "dialog > form > label > input"
+    },
+    "data": {
+      "ms": 11300
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 12,
+    "time": "2026-09-30T08:16:25.810Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "change",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": {
+      "key": "first-pay-date",
+      "tag": "input",
+      "type": "date",
+      "text": "First pay date",
+      "path": "dialog > form > label > input"
+    },
+    "data": {
+      "value": "2026-10-24",
+      "filled": true
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 13,
+    "time": "2026-09-30T08:16:32.810Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "change",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": {
+      "key": "proof-file",
+      "tag": "input",
+      "type": "file",
+      "text": "Bank statement",
+      "path": "dialog > form > label > input"
+    },
+    "data": {
+      "files": [
+        {
+          "name": "bank-statement.pdf",
+          "size": 184220,
+          "type": "application/pdf"
+        }
+      ]
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 14,
+    "time": "2026-09-30T08:16:35.810Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "click",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": {
+      "key": "dialog-submit",
+      "tag": "button",
+      "type": "submit",
+      "text": "Submit change",
+      "path": "dialog > form > button"
+    },
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 15,
+    "time": "2026-09-30T08:16:35.810Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "submit",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": null,
+    "data": {
+      "fields": [
+        {
+          "key": "new-iban",
+          "filled": true
+        },
+        {
+          "key": "first-pay-date",
+          "filled": true
+        },
+        {
+          "key": "proof-file",
+          "filled": true
+        }
+      ]
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 16,
+    "time": "2026-09-30T08:16:36.010Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "request",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": null,
+    "data": {
+      "method": "POST",
+      "url": "http://127.0.0.1:3000/api/submissions",
+      "status": 201,
+      "ms": 64
+    }
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 17,
+    "time": "2026-09-30T08:16:36.110Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "dialog_close",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": null,
+    "data": null
+  },
+  {
+    "schema": "tectonic.recorder/v1",
+    "case_id": "c3f1a9e2-5b7d-4c61-9f0e-2a8d6b4e1c01",
+    "seq": 18,
+    "time": "2026-09-30T08:16:41.110Z",
+    "actor": {
+      "id": "marie",
+      "role": "senior"
+    },
+    "type": "stop",
+    "url": "http://127.0.0.1:3000/#/employees/E-10432",
+    "target": null,
+    "data": {
+      "ms": 159500
+    }
+  }
+]

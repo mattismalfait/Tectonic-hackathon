@@ -43,14 +43,14 @@ The input SOP with `source` (the path of the raw file it was checked against) an
 
 ## Model
 
-`claude-opus-5-5`, structured output via `output_config.format` so the answer is always valid JSON with one entry per step.
+Runs on the local Claude subscription through Claude Code, not the API: `claude -p --json-schema … --output-format json --tools "" --no-session-persistence`. The prompt goes in on stdin; the answer is read from `structured_output`, which always follows the schema. No API key, no dependencies.
 
 ## Interfaces
 
 | Interface | Shape |
 |---|---|
 | CLI | `matcher --sop data/bank-account-change/process.json --source recording.jsonl [--out result.json]` |
-| Library | `check({ sop, source }) → Promise<Sop>` |
+| Library | `match(sop, raw, source) → Promise<Sop>` |
 
 ## Layout
 
@@ -60,6 +60,6 @@ matcher/
   README.md
   package.json
   src/
-    cli.ts     arguments, reads the files, writes the result
-    check.ts   the Claude call and adding match to the SOP
+    cli.js       arguments, reads the files, writes the result
+    matcher.js   the Claude call and adding source + match to the SOP
 ```
