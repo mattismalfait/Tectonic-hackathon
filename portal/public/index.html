@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Payroll Workspace</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">P</span>
+      <div>
+        <strong>Payroll Workspace</strong>
+        <span id="client-name" class="client"></span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button type="button" class="ghost" id="calendar-toggle" data-track="payroll-calendar" aria-expanded="false" aria-controls="calendar">Payroll calendar</button>
+      <label class="officer">
+        <span>Signed in as</span>
+        <select id="actor" data-track="signed-in-as"></select>
+      </label>
+    </div>
+  </header>
+
+  <section id="calendar" class="calendar" hidden>
+    <div><span class="muted">Last payroll run</span> <strong id="last-run"></strong></div>
+    <div><span class="muted">Next payroll run</span> <strong id="next-run"></strong></div>
+  </section>
+
+  <main id="view" tabindex="-1"></main>
+
+  <dialog id="iban-dialog" aria-labelledby="iban-dialog-title">
+    <form id="iban-form" method="dialog" novalidate>
+      <h2 id="iban-dialog-title">Change bank account</h2>
+      <dl class="facts">
+        <div><dt>Employee</dt><dd id="dialog-employee"></dd></div>
+        <div><dt>Current IBAN</dt><dd id="dialog-current-iban" class="mono"></dd></div>
+      </dl>
+      <label>New IBAN
+        <input name="iban" data-track="new-iban" autocomplete="off" spellcheck="false" maxlength="50" placeholder="BE68 5390 0754 7034">
+      </label>
+      <label>First pay date on this account
+        <input name="firstPayDate" data-track="first-pay-date" type="date">
+      </label>
+      <label>Proof (optional)
+        <input name="proof" data-track="proof-file" type="file" accept=".pdf,.png,.jpg,.jpeg">
+        <span class="hint">Only the file name is recorded. The file is not uploaded.</span>
+      </label>
+      <p id="dialog-error" class="error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button type="button" class="ghost" id="dialog-cancel" data-track="dialog-cancel">Cancel</button>
+        <button type="submit" id="dialog-submit" data-track="dialog-submit">Submit change</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="/tracker.js"></script>
+  <script src="/app.js"></script>
+  <script src="/recorder.js"></script>
+  <script src="/recorder-ui.js"></script>
+</body>
+</html>

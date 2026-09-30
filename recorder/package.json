@@ -1,0 +1,7 @@
+{
+  "name": "@tectonic/recorder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Universal event recorder for any web page: Recorder.start() / Recorder.stop().",
+  "main": "recorder.js"
+}

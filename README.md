@@ -32,3 +32,33 @@ Product architecture: see [ARCHITECTURE.md](ARCHITECTURE.md).
 - **AI extraction** (source → claims with a verbatim quote) is pre-computed in `claims.json`; tests check that every quote literally appears in its source.
 - **StarGaze** people capture is represented by consented statements/recordings as sources.
 - The app runs fully client-side (no backend, no accounts, no secrets). A production version would add SSO and role-based access.
+
+## Portal & recorder
+
+### Workspaces
+
+| Folder         | What it is                                                                 |
+| -------------- | -------------------------------------------------------------------------- |
+| `portal/`      | Payroll workspace for the dummy client **Lumina Retail NV**: employee list → employee detail → "Edit IBAN" pop-up. Tracks every click and input. |
+| `recorder/`    | Universal event recorder for any web page: `Recorder.start()` / `Recorder.stop()`. See [recorder/README.md](recorder/README.md). |
+| `detection/`   | The trust-signal algorithm. See [detection/README.md](detection/README.md). |
+| `events/`      | One `.jsonl` file per browser session with every tracked UI event. Format: [EVENTS.md](EVENTS.md). |
+| `submissions/` | One JSON file per accepted IBAN change, linked to its events by `case_id`. |
+
+### Run the portal
+
+Needs Node 20+. No external dependencies.
+
+```sh
+npm install      # links the workspaces
+npm start        # http://127.0.0.1:3000
+npm test         # detection tests
+```
+
+Use "Signed in as" to act as a senior (Marie, Karim, Lotte) or a junior (Sam). Valid test IBAN: `BE71 0961 2345 6769`.
+
+The server only listens on localhost. All data is synthetic.
+
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)

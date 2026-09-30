@@ -1,0 +1,10 @@
+{
+  "name": "@tectonic/portal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Payroll workspace for the dummy client Lumina Retail NV. Tracks every click and input.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

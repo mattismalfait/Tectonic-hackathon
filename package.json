@@ -1,0 +1,16 @@
+{
+  "name": "tectonic-hackathon",
+  "private": true,
+  "workspaces": [
+    "portal",
+    "detection",
+    "recorder"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "npm start -w portal",
+    "test": "npm test -w detection"
+  }
+}
