@@ -72,6 +72,33 @@ describe('scoring engine', () => {
     expect(step3.explanation!.categories.docs.status).toBe('mixed')
   })
 
+  it("accepts the matcher's output (source path + match)", () => {
+    const data = DATASETS[0]
+    const master: SOP = {
+      id: data.process.id,
+      name: data.process.name,
+      steps: data.process.steps.map((s) => ({ id: s.id, name: s.name, description: s.description })),
+    }
+    const checked = (source: string, match: boolean): SOP => ({
+      ...master,
+      source,
+      steps: [{ id: 'step-3', name: "Verify the employee's identity", description: 'irrelevant', match }],
+    })
+    const sops: SOP[] = [
+      checked('data/bank-account-change/raw/people/stargaze_payroll-consultant_screen-recording_2026-09-10.txt', true),
+      checked('recordings\\2026-09-30_marie.jsonl', false), // not in sources.json
+    ]
+    const ds = sopsToDataset(data.process, master, sops, data.sources)
+    expect(ds.claims.map((c) => [c.source_id, c.matches_master])).toEqual([
+      ['src-18', true],
+      ['file:2026-09-30_marie.jsonl', false],
+    ])
+    const extra = ds.sources.find((s) => s.id === 'file:2026-09-30_marie.jsonl')!
+    expect(extra).toMatchObject({ type: 'person', date: '2026-09-30', approval_status: 'unreviewed' })
+    expect(ds.sources).toHaveLength(data.sources.length + 1)
+    expect(() => scoreProcess(ds, undefined, TODAY)).not.toThrow()
+  })
+
   it('without a master the engine falls back to consensus scoring', () => {
     const { master: _master, ...noMaster } = DATASETS[0]
     const r = scoreProcess(noMaster, undefined, TODAY)

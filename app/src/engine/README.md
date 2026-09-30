@@ -52,17 +52,19 @@ Every `SourceComparison` has: `title, type, system, authorRole, date, ageMonths,
 Also per step: `score` (0..1), `band` ('green' ≥75 · 'amber' 50–75 · 'red' <50 · 'gap'), `evidence` (raw), `reasons` (all sentences above as a flat list).
 Per process: `result.score`, `result.status`, `result.actions` ([{ kind, text, who, stepId }]).
 
-## Input from the SOP engine (Gilles)
-One SOP per source, same shape as the master SOP, plus the source it came from:
+## Input from the matcher (Gilles)
+One result per raw file: the master SOP with the file it was checked against and `match` per step (see `matcher/ARCHITECTURE.md`):
 
 ```json
-{ "id": "proc-bank-account-change", "name": "…", "source_id": "src-01",
+{ "id": "proc-bank-account-change", "name": "…",
+  "source": "data/bank-account-change/raw/people/stargaze_payroll-consultant_screen-recording_2026-09-10.txt",
   "steps": [ { "id": "step-3", "name": "Verify the employee's identity",
                "description": "Make sure the request really comes from the employee …",
-               "matches_master": true } ] }
+               "match": true } ] }
 ```
 
-`sopsToDataset(process, masterSop, sops, sources)` turns this into the engine's input.
-- **`source_id` is required**: the 5 signals (date, owner, approval, …) come from that source's metadata in `sources.json`. SOPs without it are skipped.
-- **`matches_master` is optional but preferred.** Without it, the step description is compared to the master's description on word overlap (≥ 50% = match).
+`sopsToDataset(process, masterSop, results, sources)` turns these into the engine's input.
+- **`source` → source id** via the hardcoded table `SOURCE_FILES` in `sop.ts` (raw file name → `src-NN` in `sources.json`). The 5 signals come from that source's metadata.
+- **A file not in the table** (a new recorder `.jsonl`, the Slack export that holds several messages) gets a source built from its path: type from the folder or extension (else `person`), date from a `YYYY-MM-DD` in the file name (else today), unreviewed. It is never dropped.
+- **Per step:** `match` is the verdict. `source_id` and `matches_master` are still accepted if present; without any verdict the description is compared to the master's (word overlap ≥ 50%).
 - Step ids should be the master's ids; otherwise steps are matched on their name.
