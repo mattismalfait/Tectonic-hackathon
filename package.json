@@ -4,7 +4,8 @@
   "workspaces": [
     "portal",
     "detection",
-    "recorder"
+    "recorder",
+    "matcher"
   ],
   "engines": {
     "node": ">=20"
