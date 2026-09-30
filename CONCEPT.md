@@ -52,7 +52,7 @@ people    StarGaze (role-based) ┘   appear in the source)        → process s
 
 **The signals are facts; the weights are policy.** The QM can see and change the weights (config file / sliders). Later the weights **learn themselves**: every conflict a human resolves is a labelled example ("this source was right"), and a logistic regression on the 5 signals yields the optimal weights. That's the regression idea.
 
-**Step B: filters.** A source from another country or client is excluded, with the reason shown. A source that copies another source (e.g. a Teams message pasting the doc) **counts only once**.
+**Step B: filters.** A source from another country or client is excluded, with the reason shown. A source that repeats another source (e.g. a Teams message pasting the doc) **does raise the score** (the knowledge is in use), but with half the bonus of an independent confirmation (+0.05 vs +0.1). Otherwise one outdated doc copied five times would outvote reality.
 
 **Step C: score per step**
 - Agreement = weight of the leading value / total weight

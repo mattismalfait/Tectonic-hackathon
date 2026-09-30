@@ -15,14 +15,17 @@ npm test         # scoring engine tests
 
 ## How the score works (short)
 1. **Per source:** 5 objective signals (designated source · formally approved · recency · reviewed in last 12 months · owner still active). Equal weights by default; adjustable in the UI ("the signals are facts, the weights are policy").
-2. **Filters:** sources for another country are excluded; a copy of another source counts once.
+2. **Filters:** sources for another country are excluded. Every agreeing source raises confidence; a source that repeats another one adds half the bonus of an independent confirmation.
 3. **Per step:** score = agreement × strength. Contested steps (a competing value ≥ 50% of the leading weight) are capped at 45% and go to a human; practice without an approved document or system of record is capped at 70%.
 4. **Per process:** criticality-weighted average; any red critical step means "not release-ready".
 5. **Human in the loop:** a quality manager resolves a conflict → the decision becomes evidence and the scores update live.
 
 ## Data
 All data in `process/` is **synthetic** (fictional client, people and figures). No real or confidential data is used.
+- `process/bank-account-change`: an employee changes their salary bank account (7 steps, 20 sources, raw files in `raw/`), the main demo
 - `process/offboarding`: offboarding of a senior employee (8 steps, 19 sources)
+
+Product architecture: see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## What is simulated / unfinished
 - **Connectors** (SharePoint, Confluence, SAP SuccessFactors, Slack, Teams, Outlook) are simulated with exported JSON.
